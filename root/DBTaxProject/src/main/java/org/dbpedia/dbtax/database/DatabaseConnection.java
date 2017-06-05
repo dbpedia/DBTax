@@ -1,4 +1,4 @@
-package org.dbpedia.dbtax.DBTaxProject.database;
+package org.dbpedia.dbtax.database;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,7 +12,6 @@ import java.util.Properties;
 public class DatabaseConnection {
 	
 	private static Connection con = null;
-	public DatabaseConnection() {};
 	
 	public static Connection getConnection() {	
 		if(con!=null){

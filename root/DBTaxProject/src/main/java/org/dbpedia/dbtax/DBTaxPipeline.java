@@ -1,6 +1,6 @@
-package org.dbpedia.dbtax.DBTaxProject;
+package org.dbpedia.dbtax;
 
-import org.dbpedia.dbtax.DBTaxProject.database.LeafExtractionDB;
+import org.dbpedia.dbtax.database.LeafExtractionDB;
 
 public class DBTaxPipeline {
 

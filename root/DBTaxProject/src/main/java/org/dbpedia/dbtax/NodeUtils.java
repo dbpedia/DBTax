@@ -1,14 +1,13 @@
-package org.dbpedia.dbtax.DBTaxProject;
+package org.dbpedia.dbtax;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import org.dbpedia.dbtax.DBTaxProject.database.EdgeDB;
-import org.dbpedia.dbtax.DBTaxProject.database.NodeDB;
+import org.dbpedia.dbtax.database.EdgeDB;
+import org.dbpedia.dbtax.database.NodeDB;
 
 
 public class NodeUtils {
-
 
 
 	public static void findProminentNodes(){
@@ -37,7 +36,7 @@ public class NodeUtils {
 				
 				//for all c belongs to Children do
 				int c=0;
-				while(c<children.size() && areAllLeaves==true){
+				while(c<children.size() && areAllLeaves){
 					//if c 62 L then areAllLeaves false;
 					if (!leafNodes.contains(children.get( c ))){
 						areAllLeaves = false;
@@ -55,6 +54,5 @@ public class NodeUtils {
 				prominentNodes.add(leaf);
 			NodeDB.updateProminentNode(prominentNodes);
 		}
-		System.out.println("Here I go");
 	}
 }

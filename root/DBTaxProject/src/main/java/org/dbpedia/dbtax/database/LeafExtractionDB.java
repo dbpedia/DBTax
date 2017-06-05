@@ -1,4 +1,4 @@
-package org.dbpedia.dbtax.DBTaxProject.database;
+package org.dbpedia.dbtax.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

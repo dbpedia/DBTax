@@ -1,4 +1,4 @@
-package org.dbpedia.dbtax.DBTaxProject.database;
+package org.dbpedia.dbtax.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -88,7 +88,6 @@ public class NodeDB{
 		//Connect to database
 		Connection connection = DatabaseConnection.getConnection();
 		
-		PreparedStatement ps = null;
 		String query = "UPDATE node SET is_prominent=true WHERE node_id= ";
 		
 		try{
