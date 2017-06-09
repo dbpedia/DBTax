@@ -1,5 +1,6 @@
 package org.dbpedia.dbtax;
 
+import org.dbpedia.dbtax.database.ClassesIdenification;
 import org.dbpedia.dbtax.database.LeafExtractionDB;
 
 public class DBTaxPipeline {
@@ -11,7 +12,10 @@ public class DBTaxPipeline {
 		System.out.println("DBTax:: Stage 1 is completed.");
 		
 		//Stage 2: Find Prominent Nodes
-//		NodeUtils.findProminentNodes();
+		NodeUtils.findProminentNodes();
+		
+		// Stage 2 B: NLP for is a relations
+		ClassesIdenification.findPlural();
 		
 		System.out.println("End of World !!");
 	}
