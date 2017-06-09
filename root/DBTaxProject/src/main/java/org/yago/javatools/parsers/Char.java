@@ -123,16 +123,6 @@ public class Char {
 		String apply(char c);
 	}
 
-	/** Called by normalize(int) in case the character cannot be normalized.
-	 * The default implementation returns UNKNOWN.
-	 * Feel free to create a new Char2StringFn and assign it to defaultNormalizer. */
-	public static Char2StringFn defaultNormalizer = new Char2StringFn() {
-
-		public String apply(char c) {
-			return (UNKNOWN);
-		}
-	};
-
 	/** String returned by the default implementation of defaultNormalizer, "[?]"*/
 
 	/** Maps a special character to a HTML ampersand sequence */
@@ -645,6 +635,17 @@ public class Char {
 		return (defaultNormalizer.apply((char) c));
 	}
 
+	/** Called by normalize(int) in case the character cannot be normalized.
+	 * The default implementation returns UNKNOWN.
+	 * Feel free to create a new Char2StringFn and assign it to defaultNormalizer. */
+	public static Char2StringFn defaultNormalizer = new Char2StringFn() {
+
+		public String apply(char c) {
+			return (UNKNOWN);
+		}
+	};
+
+
 	/** Eats a String of the form "%xx" from a string, where
 	 * xx is a hexadecimal code. If xx is a UTF8 code start, 
 	 * tries to complete the UTF8-code and decodes it.*/
@@ -663,7 +664,7 @@ public class Char {
 			return ((char) 0);
 		}
 		// For non-UTF8, return the char    
-		int len = Utf8Length(c);
+		int len = utf8length(c);
 		n[0] = 3;
 		if (len <= 1) return (c);
 		// Else collect the UTF8
@@ -729,7 +730,7 @@ public class Char {
 	/** Tells from the first UTF-8 code character how long the code is.
 	 * Returns -1 if the character is not an UTF-8 code start.
 	 * Returns 1 if the character is ASCII<128*/
-	public static int Utf8Length(char c) {
+	public static int utf8length(char c) {
 		// 0xxx xxxx
 		if ((c & 0x80) == 0x00) return (1);
 		// 110x xxxx
@@ -748,7 +749,7 @@ public class Char {
 			n[0] = 0;
 			return ((char) 0);
 		}
-		n[0] = Utf8Length(a.charAt(0));
+		n[0] = utf8length(a.charAt(0));
 		if (a.length() >= n[0]) {
 			switch (n[0]) {
 			case 1:
@@ -762,6 +763,8 @@ public class Char {
 			case 4:
 				if ((a.charAt(1) & 0xC0) != 0x80 || (a.charAt(2) & 0xC0) != 0x80 || (a.charAt(3) & 0xC0) != 0x80) break;
 				return ((char) (((a.charAt(0) & 0x07) << 18) + ((a.charAt(1) & 0x3F) << 12) + ((a.charAt(2) & 0x3F) << 6) + ((a.charAt(3) & 0x3F))));
+			default : 
+				return 'a';
 			}
 		}
 		n[0] = -1;
@@ -769,7 +772,8 @@ public class Char {
 	}
 
 	/** Decodes all UTF8 characters in the string*/
-	public static String decodeUTF8(String s) {
+	public static String decodeUTF8(String input) {
+		String s = input;
 		StringBuilder result = new StringBuilder();
 		int[] eatLength = new int[1];
 		while (s.length() != 0) {
@@ -786,7 +790,8 @@ public class Char {
 	}
 
 	/** Decodes all percentage characters in the string*/
-	public static String decodePercentage(String s) {
+	public static String decodePercentage(String input) {
+		String s = input;
 		StringBuilder result = new StringBuilder();
 		int[] eatLength = new int[1];
 		while (s.length() != 0) {
@@ -803,7 +808,7 @@ public class Char {
 	}
 
 	/** Fabian: This method cannot decode numeric hexadecimal ampersand codes. What is its purpose? TODO*/
-	public static String decodeAmpersand_UNKNOWN(String s) {
+	public static String decodeAmpersandUNKNOWN(String s) {
 		if (s == null) {
 			return null;
 		}
@@ -1042,7 +1047,8 @@ public class Char {
 	}
 
 	/** Replaces all codes in a String by the 16 bit Unicode characters */
-	public static String decode(String s) {
+	public static String decode(String input) {
+		String s = input;
 		StringBuilder b = new StringBuilder();
 		int[] eatLength = new int[1];
 		while (s.length() > 0) {

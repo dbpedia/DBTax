@@ -43,6 +43,35 @@ Example:
  */
 public class NounGroup {
 	
+	/** Holds prepositions (like "of" etc.) */
+	public static final FinalSet<String> prepositions=new FinalSet<String>(
+			",",
+			"at",
+			"about",
+			"and",
+			"by",
+			"for",
+			"from",
+			"in",
+			"of",
+			"on",
+			"to",
+			"with",
+			"who",
+			"-",
+			"\u2248",
+			"under"
+			);
+	/** Contains determiners*/
+	public static final Set<String> determiners=new FinalSet<String>(
+			"the",
+			"a",
+			"an",
+			"this",
+			"these",
+			"those"
+			);
+
 	/** Holds the original noun group */
 	protected String original;
 
@@ -77,37 +106,6 @@ public class NounGroup {
 					(s.endsWith("al") || s.endsWith("ed") || s.endsWith("ing")));
 		}
 	};
-
-	/** Contains determiners*/
-	public static final Set<String> determiners=new FinalSet<String>(
-			"the",
-			"a",
-			"an",
-			"this",
-			"these",
-			"those"
-			);
-
-	/** Holds prepositions (like "of" etc.) */
-	public static final FinalSet<String> prepositions=new FinalSet<String>(
-			",",
-			"at",
-			"about",
-			"and",
-			"by",
-			"for",
-			"from",
-			"in",
-			"of",
-			"on",
-			"to",
-			"with",
-			"who",
-			"-",
-			"\u2248",
-			"under"
-			);
-
 
 	/** Returns the adjective. */
 	public String adjective() {
@@ -168,7 +166,8 @@ public class NounGroup {
 	}  
 
 	/** Constructs a noun group from a list of words */
-	public NounGroup(List<String> words) { 
+	public NounGroup(List<String> inputWords) { 
+		List<String> words = inputWords;
 		// Assemble the original
 		original=words.toString().replace(", ", " ");
 		original=original.substring(1,original.length()-1);
