@@ -54,171 +54,6 @@ the YAGO-NAGA team (see http://mpii.de/yago-naga).
  */
 public class PlingStemmer {
 
-	/** Tells whether a word form is plural. This method just checks whether the
-	 * stem method alters the word */
-	public static boolean isPlural(String s) {
-		return(!s.equals(stem(s)));
-	}
-
-	/** Tells whether a word form is singular. Note that a word can be both plural and singular */
-	public static boolean isSingular(String s) {
-		return(singAndPlur.contains(s.toLowerCase()) || !isPlural(s));
-	}  
-
-	/** Tells whether a word form is the singular form of one word and at
-	 * the same time the plural form of another.*/
-	public static boolean isSingularAndPlural(String s) {
-		return(singAndPlur.contains(s.toLowerCase()));
-	}  
-
-	/** Cuts a suffix from a string (that is the number of chars given by the suffix) */
-	public static String cut(String s, String suffix) {
-		return(s.substring(0,s.length()-suffix.length()));
-	}
-
-	/** Returns true if a word is probably not Latin */
-	public static boolean noLatin(String s) {
-		return(s.indexOf('h')>0 || s.indexOf('j')>0 || s.indexOf('k')>0 ||
-				s.indexOf('w')>0 || s.indexOf('y')>0 || s.indexOf('z')>0 ||
-				s.indexOf("ou")>0 || s.indexOf("sh")>0 || s.indexOf("ch")>0 ||
-				s.endsWith("aus"));
-	}
-
-	/** Returns true if a word is probably Greek */
-	private static boolean greek(String s) {
-		return(s.indexOf("ph")>0 || s.indexOf('y')>0 && s.endsWith("nges"));
-	}
-
-	/** Stems an English noun */
-	public static String stem(String s) {
-		String stem = s;
-
-		// Handle irregular ones
-		String irreg=irregular.get(s);
-		if(irreg!=null) return(stem=irreg);
-
-		// -on to -a
-		if(categoryON_A.contains(s)) return(stem=cut(s,"a")+"on");
-
-		// -um to -a
-		if(categoryUM_A.contains(s)) return(stem=cut(s,"a")+"um");
-
-		// -x to -ices
-		if(categoryIX_ICES.contains(s)) return(stem=cut(s,"ices")+"ix");
-
-		// -o to -i
-		if(categoryO_I.contains(s)) return(stem=cut(s,"i")+"o");
-
-		// -se to ses
-		if(categorySE_SES.contains(s)) return(stem=cut(s,"s"));
-
-		// -is to -es
-		if(categoryIS_ES.contains(s) || s.endsWith("theses")) return(stem=cut(s,"es")+"is");
-
-		// -us to -i
-		if(categoryUS_I.contains(s)) return(stem=cut(s,"i")+"us");
-		//Wrong plural
-		if(s.endsWith("uses") && (categoryUS_I.contains(cut(s,"uses")+"i") ||
-				s.equals("genuses") || s.equals("corpuses"))) return(stem=cut(s,"es"));
-
-		// -ex to -ices
-		if(categoryEX_ICES.contains(s)) return(stem=cut(s,"ices")+"ex");
-
-		// Words that do not inflect in the plural
-		if(s.endsWith("ois") || s.endsWith("itis") || category00.contains(s) || categoryICS.contains(s)) return(stem=s);
-
-		// -en to -ina
-		// No other common words end in -ina
-		if(s.endsWith("ina")) return(stem=cut(s,"en"));
-
-		// -a to -ae
-		// No other common words end in -ae
-		if(s.endsWith("ae")) return(stem=cut(s,"e"));
-
-		// -a to -ata
-		// No other common words end in -ata
-		if(s.endsWith("ata")) return(stem=cut(s,"ta"));
-
-		// trix to -trices
-		// No common word ends with -trice(s)
-		if(s.endsWith("trices")) return(stem=cut(s,"trices")+"trix");
-
-		// -us to -us
-		//No other common word ends in -us, except for false plurals of French words
-		//Catch words that are not latin or known to end in -u
-		if(s.endsWith("us") && !s.endsWith("eaus") && !s.endsWith("ieus") && !noLatin(s)
-				&& !categoryU_US.contains(s)) return(stem=s);
-
-		// -tooth to -teeth
-		// -goose to -geese
-		// -foot to -feet
-		// -zoon to -zoa
-		//No other common words end with the indicated suffixes
-		if(s.endsWith("teeth")) return(stem=cut(s,"teeth")+"tooth");
-		if(s.endsWith("geese")) return(stem=cut(s,"geese")+"goose");
-		if(s.endsWith("feet")) return(stem=cut(s,"feet")+"foot");
-		if(s.endsWith("zoa")) return(stem=cut(s,"zoa")+"zoon");
-
-		// -eau to -eaux
-		//No other common words end in eaux
-		if(s.endsWith("eaux")) return(stem=cut(s,"x"));
-
-		// -ieu to -ieux
-		//No other common words end in ieux
-		if(s.endsWith("ieux")) return(stem=cut(s,"x"));
-
-		// -nx to -nges
-		// Pay attention not to kill words ending in -nge with plural -nges
-		// Take only Greek words (works fine, only a handfull of exceptions)
-		if(s.endsWith("nges") && greek(s)) return(stem=cut(s,"nges")+"nx");
-
-		// -[sc]h to -[sc]hes
-		//No other common word ends with "shes", "ches" or "she(s)"
-		//Quite a lot end with "che(s)", filter them out
-		if(s.endsWith("shes") || s.endsWith("ches") && !categoryCHE_CHES.contains(s)) return(stem=cut(s,"es"));
-
-		// -ss to -sses
-		// No other common singular word ends with "sses"
-		// Filter out those ending in "sse(s)"
-		if(s.endsWith("sses") && !categorySSE_SSES.contains(s) && !s.endsWith("mousses")) return(stem=cut(s,"es"));
-
-		// -x to -xes
-		// No other common word ends with "xe(s)" except for "axe"
-		if(s.endsWith("xes") && !s.equals("axes")) return(stem=cut(s,"es"));
-
-		// -[nlw]ife to -[nlw]ives
-		//No other common word ends with "[nlw]ive(s)" except for olive
-		if(s.endsWith("nives") || s.endsWith("lives") && !s.endsWith("olives") ||
-				s.endsWith("wives")) return(stem=cut(s,"ves")+"fe");
-
-		// -[aeo]lf to -ves  exceptions: valve, solve
-		// -[^d]eaf to -ves  exceptions: heave, weave
-		// -arf to -ves      no exception
-		if(s.endsWith("alves") && !s.endsWith("valves") ||
-				s.endsWith("olves") && !s.endsWith("solves") ||
-				s.endsWith("eaves") && !s.endsWith("heaves") && !s.endsWith("weaves") ||
-				s.endsWith("arves") ) return(stem=cut(s,"ves")+"f");
-
-		// -y to -ies
-		// -ies is very uncommon as a singular suffix
-		// but -ie is quite common, filter them out
-		if(s.endsWith("ies") && !categoryIE_IES.contains(s)) return(stem=cut(s,"ies")+"y");
-
-		// -o to -oes
-		// Some words end with -oe, so don't kill the "e"
-		if(s.endsWith("oes") && !categoryOE_OES.contains(s)) return(stem=cut(s,"es"));
-
-		// -s to -ses
-		// -z to -zes
-		// no words end with "-ses" or "-zes" in singular
-		if(s.endsWith("ses") || s.endsWith("zes") ) return(stem=cut(s,"es"));
-
-		// - to -s
-		if(s.endsWith("s") && !s.endsWith("ss") && !s.endsWith("is")) return(stem=cut(s,"s"));
-
-		return stem;
-	}
-
 	/** Words that end in "-se" in their plural forms (like "nurse" etc.)*/
 	public static Set<String> categorySE_SES=new FinalSet<String>(
 			"nurses",
@@ -908,6 +743,171 @@ public class PlingStemmer {
 			"tactics",
 			"tropics"
 			);
+
+	/** Tells whether a word form is plural. This method just checks whether the
+	 * stem method alters the word */
+	public static boolean isPlural(String s) {
+		return(!s.equals(stem(s)));
+	}
+
+	/** Tells whether a word form is singular. Note that a word can be both plural and singular */
+	public static boolean isSingular(String s) {
+		return(singAndPlur.contains(s.toLowerCase()) || !isPlural(s));
+	}  
+
+	/** Tells whether a word form is the singular form of one word and at
+	 * the same time the plural form of another.*/
+	public static boolean isSingularAndPlural(String s) {
+		return(singAndPlur.contains(s.toLowerCase()));
+	}  
+
+	/** Cuts a suffix from a string (that is the number of chars given by the suffix) */
+	public static String cut(String s, String suffix) {
+		return(s.substring(0,s.length()-suffix.length()));
+	}
+
+	/** Returns true if a word is probably not Latin */
+	public static boolean noLatin(String s) {
+		return(s.indexOf('h')>0 || s.indexOf('j')>0 || s.indexOf('k')>0 ||
+				s.indexOf('w')>0 || s.indexOf('y')>0 || s.indexOf('z')>0 ||
+				s.indexOf("ou")>0 || s.indexOf("sh")>0 || s.indexOf("ch")>0 ||
+				s.endsWith("aus"));
+	}
+
+	/** Returns true if a word is probably Greek */
+	private static boolean greek(String s) {
+		return(s.indexOf("ph")>0 || s.indexOf('y')>0 && s.endsWith("nges"));
+	}
+
+	/** Stems an English noun */
+	public static String stem(String s) {
+		String stem = s;
+
+		// Handle irregular ones
+		String irreg=irregular.get(s);
+		if(irreg!=null) return(stem=irreg);
+
+		// -on to -a
+		if(categoryON_A.contains(s)) return(stem=cut(s,"a")+"on");
+
+		// -um to -a
+		if(categoryUM_A.contains(s)) return(stem=cut(s,"a")+"um");
+
+		// -x to -ices
+		if(categoryIX_ICES.contains(s)) return(stem=cut(s,"ices")+"ix");
+
+		// -o to -i
+		if(categoryO_I.contains(s)) return(stem=cut(s,"i")+"o");
+
+		// -se to ses
+		if(categorySE_SES.contains(s)) return(stem=cut(s,"s"));
+
+		// -is to -es
+		if(categoryIS_ES.contains(s) || s.endsWith("theses")) return(stem=cut(s,"es")+"is");
+
+		// -us to -i
+		if(categoryUS_I.contains(s)) return(stem=cut(s,"i")+"us");
+		//Wrong plural
+		if(s.endsWith("uses") && (categoryUS_I.contains(cut(s,"uses")+"i") ||
+				s.equals("genuses") || s.equals("corpuses"))) return(stem=cut(s,"es"));
+
+		// -ex to -ices
+		if(categoryEX_ICES.contains(s)) return(stem=cut(s,"ices")+"ex");
+
+		// Words that do not inflect in the plural
+		if(s.endsWith("ois") || s.endsWith("itis") || category00.contains(s) || categoryICS.contains(s)) return(stem=s);
+
+		// -en to -ina
+		// No other common words end in -ina
+		if(s.endsWith("ina")) return(stem=cut(s,"en"));
+
+		// -a to -ae
+		// No other common words end in -ae
+		if(s.endsWith("ae")) return(stem=cut(s,"e"));
+
+		// -a to -ata
+		// No other common words end in -ata
+		if(s.endsWith("ata")) return(stem=cut(s,"ta"));
+
+		// trix to -trices
+		// No common word ends with -trice(s)
+		if(s.endsWith("trices")) return(stem=cut(s,"trices")+"trix");
+
+		// -us to -us
+		//No other common word ends in -us, except for false plurals of French words
+		//Catch words that are not latin or known to end in -u
+		if(s.endsWith("us") && !s.endsWith("eaus") && !s.endsWith("ieus") && !noLatin(s)
+				&& !categoryU_US.contains(s)) return(stem=s);
+
+		// -tooth to -teeth
+		// -goose to -geese
+		// -foot to -feet
+		// -zoon to -zoa
+		//No other common words end with the indicated suffixes
+		if(s.endsWith("teeth")) return(stem=cut(s,"teeth")+"tooth");
+		if(s.endsWith("geese")) return(stem=cut(s,"geese")+"goose");
+		if(s.endsWith("feet")) return(stem=cut(s,"feet")+"foot");
+		if(s.endsWith("zoa")) return(stem=cut(s,"zoa")+"zoon");
+
+		// -eau to -eaux
+		//No other common words end in eaux
+		if(s.endsWith("eaux")) return(stem=cut(s,"x"));
+
+		// -ieu to -ieux
+		//No other common words end in ieux
+		if(s.endsWith("ieux")) return(stem=cut(s,"x"));
+
+		// -nx to -nges
+		// Pay attention not to kill words ending in -nge with plural -nges
+		// Take only Greek words (works fine, only a handfull of exceptions)
+		if(s.endsWith("nges") && greek(s)) return(stem=cut(s,"nges")+"nx");
+
+		// -[sc]h to -[sc]hes
+		//No other common word ends with "shes", "ches" or "she(s)"
+		//Quite a lot end with "che(s)", filter them out
+		if(s.endsWith("shes") || s.endsWith("ches") && !categoryCHE_CHES.contains(s)) return(stem=cut(s,"es"));
+
+		// -ss to -sses
+		// No other common singular word ends with "sses"
+		// Filter out those ending in "sse(s)"
+		if(s.endsWith("sses") && !categorySSE_SSES.contains(s) && !s.endsWith("mousses")) return(stem=cut(s,"es"));
+
+		// -x to -xes
+		// No other common word ends with "xe(s)" except for "axe"
+		if(s.endsWith("xes") && !s.equals("axes")) return(stem=cut(s,"es"));
+
+		// -[nlw]ife to -[nlw]ives
+		//No other common word ends with "[nlw]ive(s)" except for olive
+		if(s.endsWith("nives") || s.endsWith("lives") && !s.endsWith("olives") ||
+				s.endsWith("wives")) return(stem=cut(s,"ves")+"fe");
+
+		// -[aeo]lf to -ves  exceptions: valve, solve
+		// -[^d]eaf to -ves  exceptions: heave, weave
+		// -arf to -ves      no exception
+		if(s.endsWith("alves") && !s.endsWith("valves") ||
+				s.endsWith("olves") && !s.endsWith("solves") ||
+				s.endsWith("eaves") && !s.endsWith("heaves") && !s.endsWith("weaves") ||
+				s.endsWith("arves") ) return(stem=cut(s,"ves")+"f");
+
+		// -y to -ies
+		// -ies is very uncommon as a singular suffix
+		// but -ie is quite common, filter them out
+		if(s.endsWith("ies") && !categoryIE_IES.contains(s)) return(stem=cut(s,"ies")+"y");
+
+		// -o to -oes
+		// Some words end with -oe, so don't kill the "e"
+		if(s.endsWith("oes") && !categoryOE_OES.contains(s)) return(stem=cut(s,"es"));
+
+		// -s to -ses
+		// -z to -zes
+		// no words end with "-ses" or "-zes" in singular
+		if(s.endsWith("ses") || s.endsWith("zes") ) return(stem=cut(s,"es"));
+
+		// - to -s
+		if(s.endsWith("s") && !s.endsWith("ss") && !s.endsWith("is")) return(stem=cut(s,"s"));
+
+		return stem;
+	}
 
 	/** Test routine */
 	public static void main(String[] argv) throws Exception {    

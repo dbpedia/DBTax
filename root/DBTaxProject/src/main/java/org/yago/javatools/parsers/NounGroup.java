@@ -42,6 +42,27 @@ Example:
 </PRE>
  */
 public class NounGroup {
+	
+	/** Holds the original noun group */
+	protected String original;
+
+	/** Holds the adjective */
+	protected String adjective;
+
+	/** Holds the preposition */
+	protected String preposition;
+
+	/** Holds the noun group after the preposition */
+	protected NounGroup postModifier;
+
+	/** Holds the head of the noun group */
+	protected String head;
+
+	/** Holds the modifiers before the head  */
+	protected String preModifier;
+
+	/** Holds the determiner (if any) */
+	protected String determiner;
 
 	/** Defines just one function from a String to a boolean */
 	public interface String2Boolean {
@@ -50,7 +71,7 @@ public class NounGroup {
 	}
 
 	/** Tells whether a word is an adjective (currently by a simple heuristics */
-	public static String2Boolean isAdjective=new String2Boolean() {
+	public static final String2Boolean isAdjective=new String2Boolean() {
 		public boolean apply(String s) {
 			return(s.length()>0 && Character.isLowerCase(s.charAt(0)) &&
 					(s.endsWith("al") || s.endsWith("ed") || s.endsWith("ing")));
@@ -87,26 +108,6 @@ public class NounGroup {
 			"under"
 			);
 
-	/** Holds the original noun group */
-	protected String original;
-
-	/** Holds the adjective */
-	protected String adjective;
-
-	/** Holds the preposition */
-	protected String preposition;
-
-	/** Holds the noun group after the preposition */
-	protected NounGroup postModifier;
-
-	/** Holds the head of the noun group */
-	protected String head;
-
-	/** Holds the modifiers before the head  */
-	protected String preModifier;
-
-	/** Holds the determiner (if any) */
-	protected String determiner;
 
 	/** Returns the adjective. */
 	public String adjective() {

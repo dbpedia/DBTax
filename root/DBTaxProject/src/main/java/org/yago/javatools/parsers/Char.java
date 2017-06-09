@@ -114,6 +114,8 @@ the YAGO-NAGA team (see http://mpii.de/yago-naga).
  */
 public class Char {
 
+	public static String UNKNOWN = "[?]";
+
 	/** Defines just one function from an int to a String */
 	public interface Char2StringFn {
 
@@ -132,7 +134,6 @@ public class Char {
 	};
 
 	/** String returned by the default implementation of defaultNormalizer, "[?]"*/
-	public static String UNKNOWN = "[?]";
 
 	/** Maps a special character to a HTML ampersand sequence */
 	public static Map<Character, String> charToAmpersand = new FinalMap<Character, String>('&', "&amp;", '\'', "&apos;", '<', "&lt;", '>', "&gt;", '"', "&quot;");

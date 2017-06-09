@@ -215,7 +215,8 @@ public class D {
 		Process p = Runtime.getRuntime().exec(cmd, null, folder);
 		BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-		String s1, s2 = null;
+		String s1 = null;
+		String s2 = null;
 		while (null != (s1 = bri.readLine()) || null != (s2 = bre.readLine())) {
 			if (s1 != null) System.out.println(s1);
 			if (s2 != null) System.err.println(s2);
@@ -228,11 +229,15 @@ public class D {
 	public static <K, V, C extends Collection<V>, L extends Collection> void addKeyValue(Map<K, C> map, K key, V value, Class<L> collectionType) {
 		C coll = map.get(key);
 		if (coll == null) {
-			try {
-				map.put(key, coll = (C) collectionType.newInstance());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+				try {
+					map.put(key, coll = (C) collectionType.newInstance());
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		}
 		coll.add(value);
 	}
@@ -332,7 +337,7 @@ public class D {
 
 	/** Returns true if two things are equal, including NULL */
 	public static <E> boolean equal(E s1, E s2) {
-		if (s1 == s2) return (true);
+		if (s1.equals(s2)) return (true);
 		if (s1 == null) return (false);
 		if (s2 == null) return (false);
 		return (s1.equals(s2));
@@ -340,7 +345,7 @@ public class D {
 
 	/** Compares two things, including NULL */
 	public static <E extends Comparable<E>> int compare(E s1, E s2) {
-		if (s1 == s2) return (0);
+		if (s1.equals(s2)) return (0);
 		if (s1 == null) return (-1);
 		if (s2 == null) return (1);
 		return (s1.compareTo(s2));

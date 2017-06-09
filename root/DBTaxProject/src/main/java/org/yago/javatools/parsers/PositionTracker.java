@@ -81,7 +81,6 @@ public class PositionTracker {
 		positionMap=temp;
 		old2NewMap.clear();
 		accumulatedModifier=0;
-		return;
 	}
 
 
@@ -222,8 +221,7 @@ public class PositionTracker {
 			Integer modifier=tailMap.get(key);
 			if(modifier<0 && key+modifier<=pos )
 				return true;
-			else 
-				return false;
+			return false;
 			/* this does not work for the general case (had it the wrong way aroung), but can be used to implement it
         Integer key=null;
         Iterator<Integer> it=tailMap.keySet().iterator();

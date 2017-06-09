@@ -22,14 +22,14 @@ Example:
    --> 2
 </PRE>
  */
-public class FinalMap<T1 extends Comparable,T2> extends TreeMap<T1,T2>{
+public class FinalMap<S extends Comparable,T> extends TreeMap<S,T>{
 	/** Constructs a FinalMap from an array that contains key/value sequences */  
 	@SuppressWarnings("unchecked")
 	public FinalMap(Object... a) {
 		super();    
 		for(int i=0;i<a.length-1;i+=2) {
-			if(containsKey((T1)a[i])) throw new RuntimeException("Duplicate key in FinalMap: "+a[i]);
-			put((T1)a[i],(T2)a[i+1]);
+			if(containsKey((S)a[i])) throw new RuntimeException("Duplicate key in FinalMap: "+a[i]);
+			put((S)a[i],(T)a[i+1]);
 		}
 	}
 

@@ -11,7 +11,7 @@ public class DBTaxPipeline {
 		System.out.println("DBTax:: Stage 1 is completed.");
 		
 		//Stage 2: Find Prominent Nodes
-		NodeUtils.findProminentNodes();
+//		NodeUtils.findProminentNodes();
 		
 		System.out.println("End of World !!");
 	}
