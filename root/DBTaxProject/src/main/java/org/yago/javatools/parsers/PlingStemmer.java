@@ -809,7 +809,7 @@ public class PlingStemmer {
 		if(categoryUS_I.contains(s)) return(stem=cut(s,"i")+"us");
 		//Wrong plural
 		if(s.endsWith("uses") && (categoryUS_I.contains(cut(s,"uses")+"i") ||
-				s.equals("genuses") || s.equals("corpuses"))) return(stem=cut(s,"es"));
+				"genuses".equals(s) || "corpuses".equals(s))) return(stem=cut(s,"es"));
 
 		// -ex to -ices
 		if(categoryEX_ICES.contains(s)) return(stem=cut(s,"ices")+"ex");
@@ -874,7 +874,7 @@ public class PlingStemmer {
 
 		// -x to -xes
 		// No other common word ends with "xe(s)" except for "axe"
-		if(s.endsWith("xes") && !s.equals("axes")) return(stem=cut(s,"es"));
+		if(s.endsWith("xes") && !"axes".equals(s)) return(stem=cut(s,"es"));
 
 		// -[nlw]ife to -[nlw]ives
 		//No other common word ends with "[nlw]ive(s)" except for olive

@@ -203,7 +203,6 @@ public class PositionTracker {
 			accumulatedModifier=0;
 			new2OldTracker.closeRun();
 
-			return;
 		}
 
 
@@ -219,10 +218,8 @@ public class PositionTracker {
 				return false;
 			Integer key=tailMap.firstKey();
 			Integer modifier=tailMap.get(key);
-			if(modifier<0 && key+modifier<=pos )
-				return true;
-			return false;
-			/* this does not work for the general case (had it the wrong way aroung), but can be used to implement it
+			return modifier<0 && key+modifier<=pos;
+		/* this does not work for the general case (had it the wrong way aroung), but can be used to implement it
         Integer key=null;
         Iterator<Integer> it=tailMap.keySet().iterator();
         while(it.hasNext()){
@@ -233,7 +230,7 @@ public class PositionTracker {
         }  
         return false;*/
 		}
-
+		
 		public Integer translatePosition(Integer pos) {
 			SortedMap<Integer,Integer> headMap=positionMap.headMap(pos+1);
 			Integer modifier=0;     
