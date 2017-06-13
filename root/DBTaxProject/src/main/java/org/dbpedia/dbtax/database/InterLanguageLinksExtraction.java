@@ -8,19 +8,15 @@ import java.sql.SQLException;
 import org.yago.javatools.administrative.Elements;
 import org.yago.javatools.parsers.PlingStemmer;
 
-public class ClassesIdenification {
+public class InterLanguageLinksExtraction {
 
-	private ClassesIdenification(){
-		
-	}
-	
-	public static void findPlural(){
+	public static void findInterlanguageLinks(){
 		
 		// Establish Database Connection
 		Connection connection = DatabaseConnection.getConnection();
 
 		PreparedStatement ps = null;
-		String query = "select category_name, node_id from node where is_prominent=1;";
+		String query = "select node_id from node where is_prominent=1;";
 
 		ResultSet rs = null;
 
@@ -32,13 +28,9 @@ public class ClassesIdenification {
 			//We loop through the entire result set of nodes.
 			while ( rs.next() ){
 
-				String cat_name = rs.getString("category_name");
-				
-				//Get the head from the Node's category
-				String head = Elements.getHead(cat_name);
-				
-				if(PlingStemmer.isPlural(head))
-					NodeDB.updatePluralNode(rs.getInt("node_id"));
+				int id = rs.getInt("node_id");
+				int numOfNodes = InterLanguageLinksDB.getLanguageLinksCount(id);
+				NodeDB.updateInterlanguageLinks(id, numOfNodes);
 			}
 			
 			ps.close();
@@ -48,4 +40,5 @@ public class ClassesIdenification {
 			e.printStackTrace();
 		}
 	}
+
 }

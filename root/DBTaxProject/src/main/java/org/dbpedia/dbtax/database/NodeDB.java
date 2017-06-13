@@ -132,4 +132,28 @@ public class NodeDB{
 				}
 		}	
 	}
+	
+	public static void updateInterlanguageLinks(int id, int number){
+
+		//Connect to database
+		Connection connection = DatabaseConnection.getConnection();
+
+		String query = "UPDATE node SET score_interlang= "+number+" WHERE node_id= ";
+
+		try{
+			String updatedQuery = query+id;
+			Statement stmt = (Statement) connection.createStatement();
+			stmt.executeUpdate(updatedQuery);
+			connection.close();
+		} catch(SQLException e){
+			e.printStackTrace();
+		} finally{
+			if(connection!=null)
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		}	
+	}
 }

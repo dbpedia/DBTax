@@ -48,12 +48,21 @@ public class NodeUtils {
 					prominentNodes.add(parent);
 					isProminent = false;
 				}
-				
 			}
 			if(isProminent)
 				prominentNodes.add(leaf);
-			NodeDB.updateProminentNode(prominentNodes);
+			if(prominentNodes.size()%100==10)
+				try {
+					Thread.sleep(2000);
+					System.out.println("sleeping");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			System.out.println(prominentNodes.size());
+//			System.out.println("hello Here");
 		}
+		NodeDB.updateProminentNode(prominentNodes);
+		
 	}
 	
 }

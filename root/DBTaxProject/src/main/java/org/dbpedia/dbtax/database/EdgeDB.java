@@ -37,40 +37,26 @@ public class EdgeDB {
 	 */
 	public static ArrayList<Integer> getTransitiveParents(int leafNode){
 		
-		//Connect to database
-		Connection connection = DatabaseConnection.getConnection();
-		
-		PreparedStatement ps = null;
 		String query =  "SELECT parent_id FROM edges WHERE child_id =?";
 		
 		ResultSet rs = null;
-		
-		try{
-			ps = connection.prepareStatement(query);
+
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)) {
+			
 			ps.setInt( 1, leafNode);
-
 			rs = ps.executeQuery();
+			
 			ArrayList<Integer> parents= new ArrayList<Integer>();
-
 			while (rs.next()){
 				parents.add(rs.getInt(1));
 			}
-			connection.close();
-			
 			return parents;
-		
-		} catch(SQLException e) {
+	    }catch(SQLException e) {
 			e.printStackTrace();
 			return null;
-		}finally{
-			if(connection!=null)
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-		}	
-	}
+		}		
+	}	
 	
 	/*
 	 * This method returns all the children nodes of the given node
@@ -78,39 +64,25 @@ public class EdgeDB {
 	 */
 	public static ArrayList<Integer> getChildren(int parentId){
 		
-		//Connect to database
-		Connection connection = DatabaseConnection.getConnection();
-		
-		PreparedStatement ps = null;
 		String query =  "SELECT child_id FROM edges WHERE parent_id=?";
 
 		ResultSet rs = null;
-
-		try{
-			ps = connection.prepareStatement(query);
+		
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)) {
+			
 			ps.setInt( 1, parentId);
-
 			rs = ps.executeQuery();
-
 			ArrayList<Integer> childrenList= new ArrayList<Integer>();
 
 			while (rs.next()){
 				childrenList.add(rs.getInt("child_id"));
 			}
-			connection.close();
 			return childrenList;
-		} catch(SQLException e)
-		{
+	    } catch (SQLException e) {
 			e.printStackTrace();
 			return null;
-		} finally{
-			if(connection!=null)
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-		}	
-	}
+		}
+	}	
 
 }
