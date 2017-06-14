@@ -58,8 +58,6 @@ public class NodeUtils {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			System.out.println(prominentNodes.size());
-//			System.out.println("hello Here");
 		}
 		NodeDB.updateProminentNode(prominentNodes);
 		

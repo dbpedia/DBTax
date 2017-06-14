@@ -5,18 +5,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.dbpedia.dbtax.ThresholdCalculations;
+
 /*
  * Extract Leaves Function adds the leaf nodes and their corresponding Edges 
  */
 
 public class LeafExtractionDB {
 
+	private LeafExtractionDB(){ }
+	
 	public static void extractLeaves(){	
-
-		// Establish Database Connection
-		Connection connection = DatabaseConnection.getConnection();
-
-		PreparedStatement ps = null;
+		
+		int threshold = ThresholdCalculations.findThreshold();
+		
 		String query = "SELECT cat_title "
 				+ "FROM category "
 				+ "WHERE cat_title in "
@@ -28,19 +30,21 @@ public class LeafExtractionDB {
 				+ "where page_namespace =0)) "
 				+ "AND cat_subcats=0 "
 				+ "AND cat_pages>0 "
-				+ "AND cat_pages<50;";
+				+ "AND cat_pages< "+threshold;
 		/*
-		 * Threshold Value is chosen as 50
+		 * Threshold Value is calculated.
 		 * The above query gets all categories names of the actual article pages 
 		 * With no sub categories
 		 */
 
 		ResultSet rs = null;
 
-		try{
 
-			ps = connection.prepareStatement( query );
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)) {
+			
 			rs = ps.executeQuery();
+			
 			System.out.println("Excueted Query");
 
 			//We loop through the entire result set of leaves.
@@ -61,18 +65,8 @@ public class LeafExtractionDB {
 					CategoryLinksDB.getCategoryParentsByPageID(pageid);
 				}
 			}
-
-			connection.close();
-
 		} catch ( SQLException e ){
 			e.printStackTrace();
-		}finally{
-			if(connection!=null)
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
 		}
 	}
 }

@@ -1,1 +1,6 @@
 /target/
+*.class
+*.classproperties
+*.settings
+*.classpath
+

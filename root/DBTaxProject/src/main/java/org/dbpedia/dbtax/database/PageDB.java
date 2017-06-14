@@ -15,17 +15,13 @@ public class PageDB {
 		
 		int resultId = -1;
 
-		//Establish Database Connection	
-		Connection connection = DatabaseConnection.getConnection();
-				
-		PreparedStatement ps = null;
 		String query = "SELECT page_id FROM `page` WHERE `page_title` = ? AND page_namespace=14";
 		
 		ResultSet rs = null;
 
-		try{
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps =	connection.prepareStatement( query )){
 		
-			ps = connection.prepareStatement( query );
 			ps.setString(1, catPageTitle);
 			
 			rs = ps.executeQuery();
@@ -33,7 +29,7 @@ public class PageDB {
 			while( rs.next() ){
 				resultId= rs.getInt("page_id");
 			}
-			connection.close();
+			
 		} catch ( SQLException e ){
 			e.printStackTrace();
 		}

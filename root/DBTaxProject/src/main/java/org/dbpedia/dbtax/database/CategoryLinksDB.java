@@ -18,16 +18,14 @@ public class CategoryLinksDB {
 	 */
 	public static void getCategoryParentsByPageID(int categoryPageID){
 		
-		// Establish Database Connection	
-		Connection connection = DatabaseConnection.getConnection();
-		
-		PreparedStatement ps = null;
 		ResultSet rs = null;
 		
 		//We find all the parents for the given leaf category
 		String query = "SELECT `cl_to` FROM  `categorylinks` WHERE  `cl_from` =  " + categoryPageID;	
-		try {
-			ps = connection.prepareStatement( query );
+	
+		try(Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement ps = connection.prepareStatement( query )){
+			
 			rs = ps.executeQuery();
 			while ( rs.next() ){
 				String parentCategory = rs.getString( "cl_to" ).trim();
@@ -40,7 +38,6 @@ public class CategoryLinksDB {
 				}
 			
 			}
-			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}	

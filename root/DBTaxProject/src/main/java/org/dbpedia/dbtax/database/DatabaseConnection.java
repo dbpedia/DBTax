@@ -13,6 +13,8 @@ public class DatabaseConnection {
 	
 	private static Connection con = null;
 	
+	private DatabaseConnection(){ }
+	
 	public static Connection getConnection() {	
 		if(con!=null){
 			return con;
@@ -20,10 +22,8 @@ public class DatabaseConnection {
 		
 		Connection con = null;
 		Properties props= new Properties();
-		FileInputStream file = null;  
 		
-		try {
-			file = new FileInputStream("db.properties");
+		try(FileInputStream file =new FileInputStream("db.properties")){
 			props.load(file);
 
 			// load the Driver Class

@@ -26,5 +26,10 @@ for f in "${arr[@]}"
 		rm $prefix"$f".sql
 	done	
 
+mysql -u$MYSQL_ROOT -p$MYSQL_PASSWORD $MYSQL_DATABASE << SQL >> session.log
+CREATE TABLE IF NOT EXISTS node ( node_id int(10) NOT NULL AUTO_INCREMENT, category_name varchar(40) NOT NULL, is_leaf tinyint(1) NOT NULL, is_prominent tinyint(1) NOT NULL, is_head_plural tinyint(1) NOT NULL, head_of_name varchar(40) DEFAULT NULL, score_interlang double DEFAULT NULL, score_edit_histo double NOT NULL, PRIMARY KEY (node_id), UNIQUE KEY category_name (category_name) ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+CREATE TABLE IF NOT EXISTS edges ( parent_id int(10) NOT NULL, child_id int(10) NOT NULL, PRIMARY KEY (parent_id,child_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+quit
+SQL
 echo "DBTax Project: Completed setting up the database"
 echo "Bye"
