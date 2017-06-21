@@ -3,4 +3,3 @@
 DB_URL=jdbc:mysql://localhost:3306/dbpediadb?useSSL=false
 DB_USERNAME=root
 DB_PASSWORD=shacha
-

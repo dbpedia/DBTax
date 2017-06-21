@@ -54,8 +54,8 @@ public class LeafExtractionDB {
 
 				//Get the page id of category 
 				int pageid = PageDB.getPageId(cat_name);
-
-				if(pageid!=-1){
+				int check = cat_name.indexOf('/');
+				if(pageid!=-1 && check==-1){
 
 					//Add the leaf node to the database Node table
 					NodeDB.insertNode(pageid, cat_name);

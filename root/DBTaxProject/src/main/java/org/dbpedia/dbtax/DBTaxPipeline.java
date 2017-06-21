@@ -1,31 +1,39 @@
 package org.dbpedia.dbtax;
 
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import org.dbpedia.dbtax.database.ClassesIdenification;
 import org.dbpedia.dbtax.database.InterLanguageLinksExtraction;
 import org.dbpedia.dbtax.database.LeafExtractionDB;
 
 public class DBTaxPipeline {
 
-	public static void main(String[] args){
+    private static final Logger logger = Logger.getLogger(DBTaxPipeline.class);
 
-		System.out.println("DBTax:: hello world");
+	public static void main(String[] args){
+        PropertyConfigurator.configure("src/main/Resources/Log4j.properties");
+
+        logger.info("Hello World!");
+
 		//Stage 1: Extract Leaf Nodes
 		LeafExtractionDB.extractLeaves();
-		System.out.println("DBTax:: Stage 1 is completed.");
+		logger.info("Leaf Extraction is completed.");
 		
 		//Stage 2: Find Prominent Nodes
 		NodeUtils.findProminentNodes();
-		System.out.println("DBTax:: Stage 2A is completed.");
+		logger.info("Prominent Node discovery algorithm is ran.");
 		
 		// Stage 2 B: NLP for is a relations
 		ClassesIdenification.findPlural();
-		System.out.println("DBTax:: Stage 2B is completed.");
+		logger.info("Finding plural is completed.");
 		
 		// Stage 2 C: Interlanguage links as weights
 		InterLanguageLinksExtraction.findInterlanguageLinks();
-		System.out.println("DBTax:: Stage 2C is completed.");
+		logger.info("Calculated inter language links score");
 		
-		System.out.println("End of World !!");
+		logger.info("End of World !!");
 	}
 	
 }

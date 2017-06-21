@@ -13,6 +13,8 @@ import org.dbpedia.dbtax.database.DatabaseConnection;
  * User: Dimitris Kontokostas
  * Description
  * Created: 6/17/14 4:33 PM
+ * This code corresponds to Class Removal Algorithm 2 in paper.
+ * 
  */
 
 public class HierarchyGenerator {
@@ -23,10 +25,10 @@ public class HierarchyGenerator {
 		return original.substring(0, 1).toUpperCase() + original.substring(1);
 	}
 
-	public static void main(String[] args) {
+	public static List<Relation> mainFunc() {
 
 		Set<String> instances = generateInstances();
-		Map<String, Node> nodeMap = generateNodeMap( instances);
+		Map<String, Node> nodeMap = generateNodeMap(instances);
 
 
 		Node contentNode = new Node("Content");
@@ -87,7 +89,6 @@ public class HierarchyGenerator {
 					}
 
 				}
-				//
 				levelAddedRelations += addedRelations;
 				levelSkippedNodes += skippedNodes;
 			}
@@ -129,7 +130,7 @@ public class HierarchyGenerator {
 			e.printStackTrace();
 		}
 
-
+		return hierarchy;
 	}
 
 	public static Map<String, Node> generateNodeMap( Set<String> instances) {
@@ -137,8 +138,8 @@ public class HierarchyGenerator {
 
 		String query = "SELECT pnode.category_name parent_name, cnode.category_name child_name "
 				+" FROM edges "
-				+" LEFT OUTER JOIN node pnode ON edges.parent_id = pnode.node_id "
-				+" LEFT OUTER JOIN node cnode ON edges.child_id = cnode.node_id"
+				+" JOIN node pnode ON edges.parent_id = pnode.node_id "
+				+" JOIN node cnode ON edges.child_id = cnode.node_id"
 				+" WHERE cnode.category_name is NOT NULL"
 				+ " AND pnode.category_name is NOT NULL;";
 		long instancesSkipped = 0;
@@ -149,7 +150,6 @@ public class HierarchyGenerator {
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-				System.out.println(rs.getString("child_name")+" "+rs.getString("parent_name"));
 				String parentName  = normalizeName(rs.getString("parent_name").trim());
 				String childName   = normalizeName(rs.getString("child_name").trim());
 
@@ -177,7 +177,7 @@ public class HierarchyGenerator {
 					continue;
 				}
 
-				if (parentName.equals("Category") || parentName.equals("Categories")) {
+				if ("Category".equals(parentName) || "Categories".equals(parentName)) {
 					continue;
 				}
 

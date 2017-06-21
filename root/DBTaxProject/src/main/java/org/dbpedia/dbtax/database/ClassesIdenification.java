@@ -20,7 +20,7 @@ public class ClassesIdenification {
 		Connection connection = DatabaseConnection.getConnection();
 
 		PreparedStatement ps = null;
-		String query = "select category_name, node_id from node where is_prominent=1;";
+		String query = "select category_name, node_id from node;";
 
 		ResultSet rs = null;
 
@@ -33,12 +33,14 @@ public class ClassesIdenification {
 			while ( rs.next() ){
 
 				String cat_name = rs.getString("category_name");
-				
+				cat_name = cat_name.replace("_", " ");
 				//Get the head from the Node's category
 				String head = Elements.getHead(cat_name);
 				
 				if(PlingStemmer.isPlural(head))
-					NodeDB.updatePluralNode(rs.getInt("node_id"));
+					NodeDB.updatePluralNode(rs.getInt("node_id"), head, true);
+				else 
+					NodeDB.updatePluralNode(rs.getInt("node_id"), head, false);
 			}
 			
 			ps.close();

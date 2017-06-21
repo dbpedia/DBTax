@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 import com.mysql.jdbc.Statement;
 
@@ -83,31 +84,84 @@ public class NodeDB{
 		}	
 	}
 
-	public static void updatePluralNode(int id){
-
-		String query = "UPDATE node SET is_head_plural=true WHERE node_id= ";
-
+	public static void updatePluralNode(int id, String head, boolean isPlural){
+		String query = null;
+		if(isPlural)
+			query = "UPDATE node SET is_head_plural=true, head_of_name='"+head+"' WHERE node_id= "+id;
+		else 
+			query = "UPDATE node SET head_of_name= '"+head+"' WHERE node_id= "+id;
+		System.out.println(query);
 		try(Connection connection = DatabaseConnection.getConnection()){
-			String updatedQuery = query+id;
+			String updatedQuery = query;
 			Statement stmt = (Statement) connection.createStatement();
 			stmt.executeUpdate(updatedQuery);
 		} catch(SQLException e){
 			e.printStackTrace();
 		} 
 	}
-	
+
 	public static void updateInterlanguageLinks(int id, int number){
 
 		String query = "UPDATE node SET score_interlang= "+number+" WHERE node_id= ";
 
-		try(Connection connection = DatabaseConnection.getConnection()){
+		try(Connection connection = DatabaseConnection.getConnection();
+			Statement stmt = (Statement) connection.createStatement()){
 			
 			String updatedQuery = query+id;
-			Statement stmt = (Statement) connection.createStatement();
 			stmt.executeUpdate(updatedQuery);
 		
 		} catch(SQLException e){
 			e.printStackTrace();
 		} 
 	}
+	public static Set<String>  getDisinctheads(){
+
+		String query =  "SELECT  distinct `head_of_name` FROM node WHERE  `is_prominent` = true AND `is_head_plural`=true AND `score_interlang` > 2;";
+
+		ResultSet rs = null;
+
+		Set<String> heads= new HashSet<String>();
+
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)){
+			//Execute the query
+			rs = ps.executeQuery();
+
+
+			while (rs.next()){
+				heads.add(rs.getString("head_of_name") );
+			}
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}	
+		return heads;
+
+	}
+	
+	public static Set<String>  getCategoriesByHead(String head){
+
+		String query =  "SELECT  category_name FROM node where `head_of_name` = '"+ head+"';";
+
+		ResultSet rs = null;
+
+		Set<String> categories= new HashSet<String>();
+
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)){
+
+				rs = ps.executeQuery();
+
+
+			while (rs.next()){
+				categories.add(rs.getString("category_name") );
+			}
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}	
+		return categories;
+
+	}
+
 }
