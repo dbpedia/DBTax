@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dbpedia.dbtax.database.CategoryDB;
+import org.slf4j.LoggerFactory;
 
 /*
 *
@@ -14,15 +15,17 @@ import org.dbpedia.dbtax.database.CategoryDB;
 */
 
 public class ThresholdCalculations {
-	
+
+//	private static final Logger logger = LogManager.getRootLogger();//.getLogger(ThresholdCalculations.class);
 	private ThresholdCalculations() { }
 	
 	//Gets the list of categories along with their slopes.
 	private static List<Point> calculuateNoOfCategories(){
 		ArrayList<Point> points = new ArrayList();
-		for(int i=0;i<500;i++){
+		for(int i=0;i<1000;i++){
 			Point p = new Point(i,CategoryDB.getCategoryPageCount(i));
 			points.add(p);
+			System.out.println(p.getX()+","+p.getY());
 		}
 		return points;
 	}
@@ -32,11 +35,14 @@ public class ThresholdCalculations {
 		List<Point> points = calculuateNoOfCategories();
 		int count =0;
 		int i=0;
-		while(count<5){
-			if(caluculateSlope(points.get(i),points.get(i+1))<4)
+        while(count<5){
+            double slope = caluculateSlope(points.get(i), points.get(i+1));
+		    System.out.println("heree"+ i+" "+slope);
+		    if(slope<10)
 				count++;
 			i++;
 		}
+//        logger.info("Calculated threshold: "+ i);
 		return i;
 	}
 	
@@ -48,6 +54,16 @@ public class ThresholdCalculations {
 	}
 	
 	public static void main(String[] argv){
+        org.slf4j.Logger logger = LoggerFactory.getLogger(ThresholdCalculations.class);
+
+
+        logger.debug("Hello World");
+
+        logger.info("Hello World");
+
+        logger.warn("Hello World");
+
+        logger.error("Hello World");
 		int threshold =ThresholdCalculations.findThreshold();
 		System.out.println(threshold);
 	}

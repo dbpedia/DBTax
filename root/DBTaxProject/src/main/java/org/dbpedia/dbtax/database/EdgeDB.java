@@ -15,18 +15,14 @@ public class EdgeDB {
 	 */
 	public static void insertEdge(int parentId, int chidId){
 
-		// Establish Database Connection	
-		Connection connection = DatabaseConnection.getConnection();
-				
-		PreparedStatement ps = null;
 		String query = "INSERT IGNORE INTO edges(parent_id,child_id) VALUES (?, ?)";
 
-		try{
-			ps = connection.prepareStatement(query);
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps=connection.prepareStatement(query)){
+
 			ps.setInt(1, parentId);
 			ps.setInt(2, chidId);
 			ps.executeUpdate();
-			connection.close();
 		}catch(SQLException e){
 			e.printStackTrace();
 		}
