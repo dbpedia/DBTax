@@ -27,18 +27,22 @@ public class DatabaseConnection {
 			props.load(file);
 
 			// load the Driver Class
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Class.forName(props.getProperty("DB_DRIVER")).newInstance();
 
 			// create the connection now	
 			con = DriverManager.getConnection(props.getProperty("DB_URL"),
 					props.getProperty("DB_USERNAME"),
 					props.getProperty("DB_PASSWORD"));
-
 		} catch (IOException | ClassNotFoundException | SQLException | InstantiationException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return con;
+	}
+	public static void main(String [] argc){
+		DatabaseConnection.getConnection();
+
+		System.out.print("done");
 	}
 }

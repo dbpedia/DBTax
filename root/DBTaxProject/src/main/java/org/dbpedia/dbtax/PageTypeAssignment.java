@@ -1,36 +1,32 @@
 package org.dbpedia.dbtax;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.dbpedia.dbtax.database.CategoryLinksDB;
 import org.dbpedia.dbtax.database.NodeDB;
 import org.dbpedia.dbtax.database.PageDB;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.OWL;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PageTypeAssignment {
-
+    private static final Logger logger = LoggerFactory.getLogger(PageTypeAssignment.class);
     public static void main(String[] argv) {
         Set<String> heads = NodeDB.getDisinctheads();
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("test.ttl"), "UTF8"))) {
-
+        logger.debug("Got the heads");
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("pageTypeAssigment.ttl"), "UTF8"))) {
             for (String head : heads) {
                 Set<String> categories = NodeDB.getCategoriesByHead(head);
+                logger.debug("got cat for head: "+head);
                 for (String category : categories) {
+                    logger.debug("cat is "+ category);
                     List<Page> pages = PageDB.getPagesByCategory(category);
+                    logger.debug("got pages for category"+ category);
                     for (Page page : pages) {
-                        System.out.println(page.getName() + " " + category + " " + head);
+                        logger.debug(page.getName() + " " + category + " " + head);
                         if (page.getNamespace() == 0) {
                             //namespace==0 means it's a article page
-                            writer.write("<http://dbpedia.org/resource/" + page.getName() + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/dbtax/" + category + "> . \n");
+                            writer.write("<http://dbpedia.org/resource/" + page.getName() + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/dbtax/" + head + "> . \n");
                         }
                         if (page.getNamespace() == 14) {
                             //namespace==14 means it's a categorypage recurcive the categorypage
@@ -52,7 +48,7 @@ public class PageTypeAssignment {
 
     public static void getPagesForCategoryFirstChild(String catName) {
         List<Page> pages = PageDB.getPagesByCategory(catName);
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("test.ttl"), "UTF8"))) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("testp.ttl"), "UTF8"))) {
             for (Page page : pages) {
                 if (page.getNamespace() == 0) {
                     //namespace==0 means it's a article page

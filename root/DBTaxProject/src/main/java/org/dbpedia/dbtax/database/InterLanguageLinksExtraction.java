@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/*
 import org.yago.javatools.administrative.Elements;
 import org.yago.javatools.parsers.PlingStemmer;
+*/
 
 public class InterLanguageLinksExtraction {
 

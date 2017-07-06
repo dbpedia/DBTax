@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.mysql.jdbc.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * This class has most of the methods that deal with Page table in Database. 
@@ -16,6 +18,7 @@ import com.mysql.jdbc.Statement;
 
 public class NodeDB{
 
+    private static final Logger logger = LoggerFactory.getLogger(NodeDB.class);
 	/*
 	 * This function is responsible for adding Categories/Node to Node table.
 	 * Input Parameters: PageID(from page Table) and CategoryName.
@@ -33,7 +36,7 @@ public class NodeDB{
 
 			connection.close();
 		} catch(SQLException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -62,7 +65,7 @@ public class NodeDB{
 			return leafId;
 
 		} catch(SQLException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			return null;
 		}	
 	}
@@ -80,7 +83,7 @@ public class NodeDB{
 				stmt.executeUpdate(updatedQuery);
 			}
 		} catch(SQLException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}	
 	}
 
@@ -96,7 +99,7 @@ public class NodeDB{
 			Statement stmt = (Statement) connection.createStatement();
 			stmt.executeUpdate(updatedQuery);
 		} catch(SQLException e){
-			e.printStackTrace();
+            logger.error(e.getMessage());
 		} 
 	}
 
@@ -111,46 +114,41 @@ public class NodeDB{
 			stmt.executeUpdate(updatedQuery);
 		
 		} catch(SQLException e){
-			e.printStackTrace();
+            logger.error(e.getMessage());
 		} 
 	}
 	public static Set<String>  getDisinctheads(){
 
 		String query =  "SELECT  distinct `head_of_name` FROM node WHERE  `is_prominent` = true AND `is_head_plural`=true AND `score_interlang` > 2;";
 
-		ResultSet rs = null;
-
 		Set<String> heads= new HashSet<String>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)){
 			//Execute the query
-			rs = ps.executeQuery();
-
+			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()){
 				heads.add(rs.getString("head_of_name") );
 			}
 
 		} catch(SQLException e){
-			e.printStackTrace();
-		}	
+            logger.error(e.getMessage());
+		}
 		return heads;
 
 	}
-	
+
 	public static Set<String>  getCategoriesByHead(String head){
 
 		String query =  "SELECT  category_name FROM node where `head_of_name` = '"+ head+"';";
-
-		ResultSet rs = null;
 
 		Set<String> categories= new HashSet<String>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)){
 
-				rs = ps.executeQuery();
+				ResultSet rs = ps.executeQuery();
 
 
 			while (rs.next()){
@@ -158,10 +156,9 @@ public class NodeDB{
 			}
 
 		} catch(SQLException e){
-			e.printStackTrace();
-		}	
+            logger.error(e.getMessage());
+		}
 		return categories;
-
 	}
 
 }

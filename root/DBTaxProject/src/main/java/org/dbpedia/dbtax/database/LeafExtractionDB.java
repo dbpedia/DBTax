@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.dbpedia.dbtax.ThresholdCalculations;
 
@@ -13,12 +17,14 @@ import org.dbpedia.dbtax.ThresholdCalculations;
 
 public class LeafExtractionDB {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(LeafExtractionDB.class);
+
 	private LeafExtractionDB(){ }
-	
-	public static void extractLeaves(){	
-		
-		int threshold = ThresholdCalculations.findThreshold();
-		
+	public static void extractLeaves(){
+
+		int threshold = 56; //ThresholdCalculations.findThreshold();
+
 		String query = "SELECT cat_title "
 				+ "FROM category "
 				+ "WHERE cat_title in "
@@ -37,36 +43,40 @@ public class LeafExtractionDB {
 		 * With no sub categories
 		 */
 
-		ResultSet rs = null;
-
-
+//        Random rand = new Random();
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)) {
 			
-			rs = ps.executeQuery();
-			
-			System.out.println("Excueted Query");
+			ResultSet rs = ps.executeQuery();
+			logger.info("Excuted the query to retrieve the leaves");
 
 			//We loop through the entire result set of leaves.
 			while ( rs.next() ){
 
-				String cat_name = rs.getString("cat_title");
+				String catName = rs.getString("cat_title");
 
 				//Get the page id of category 
-				int pageid = PageDB.getPageId(cat_name);
-				int check = cat_name.indexOf('/');
-				if(pageid!=-1 && check==-1){
+				int pageid = PageDB.getPageId(catName);
 
+				if(pageid!=-1){
 					//Add the leaf node to the database Node table
-					NodeDB.insertNode(pageid, cat_name);
+					NodeDB.insertNode(pageid, catName);
+               /*     if (rand.nextInt(50) % 5 == 0) {
+                        try {
+                            Thread.sleep(2000);
+                            logger.debug("Sleeeping");
+                        } catch (InterruptedException e) {
+                            logger.error(e.getMessage());
+                        }
+                    }*/
 
-					//The below function is to find the immediate parents of the categories
+                    //The below function is to find the immediate parents of the categories
 					//And add them to corresponding node and edge databases
 					CategoryLinksDB.getCategoryParentsByPageID(pageid);
 				}
 			}
 		} catch ( SQLException e ){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 }

@@ -5,10 +5,15 @@ import java.util.HashSet;
 
 import org.dbpedia.dbtax.database.EdgeDB;
 import org.dbpedia.dbtax.database.NodeDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class NodeUtils {
 
+	private static final Logger logger = LoggerFactory.getLogger(NodeUtils.class);
+
+	private NodeUtils(){}
 
 	public static void findProminentNodes(){
 		
@@ -54,13 +59,12 @@ public class NodeUtils {
 			if(prominentNodes.size()%100==10)
 				try {
 					Thread.sleep(2000);
-					System.out.println("sleeping");
+					logger.debug("Sleeeping");
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
 		}
 		NodeDB.updateProminentNode(prominentNodes);
 		
 	}
-	
 }
