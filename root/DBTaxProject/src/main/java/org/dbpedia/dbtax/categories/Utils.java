@@ -1,4 +1,4 @@
-package org.dbpedia.categories;
+package org.dbpedia.dbtax.categories;
 
 import java.io.*;
 import java.util.ArrayList;

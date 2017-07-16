@@ -1,5 +1,18 @@
 #mysql DB properties
+#DB_DRIVER=com.mysql.jdbc.Driver
+#DB_URL=jdbc:mysql://127.0.0.1:3308/dbtax
+#DB_USERNAME=shashank
+#DB_PASSWORD=
 
-DB_URL=jdbc:mysql://localhost:3306/dbpediadb?useSSL=false
-DB_USERNAME=root
-DB_PASSWORD=shacha
+# H2 database
+#DB_DRIVER=org.h2.Driver
+#database=jdbc:h2:
+#DB_URL=jdbc:h2:/media/shashank/New Volume/GSoC/DBTax/root/DBTaxProject/src/main/Resources/DB/sample
+#DB_USERNAME=sa
+#DB_PASSWORD=
+
+#mysql DB properties
+#DB_DRIVER=com.mysql.jdbc.Driver
+#DB_URL=jdbc:mysql://localhost:3306/dbpedia?useSSL=false
+#DB_USERNAME=root
+#DB_PASSWORD=sha

@@ -5,10 +5,15 @@ import java.util.HashSet;
 
 import org.dbpedia.dbtax.database.EdgeDB;
 import org.dbpedia.dbtax.database.NodeDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class NodeUtils {
 
+	private static final Logger logger = LoggerFactory.getLogger(NodeUtils.class);
+
+	private NodeUtils(){}
 
 	public static void findProminentNodes(){
 		
@@ -16,7 +21,7 @@ public class NodeUtils {
 		ArrayList<Integer> leafNodes=NodeDB.getDisinctleafNodes();
 		
 		//PN =empty array
-		HashSet<Integer> prominentNodes= new HashSet<Integer>();
+		HashSet<Integer> prominentNodes= new HashSet<>();
 
 		// for all l in leaves L
 		for(int l=0; l<leafNodes.size();l++){
@@ -24,12 +29,12 @@ public class NodeUtils {
 			int leaf = leafNodes.get(l);
 			
 			boolean isProminent = true;
+
 			//P -> getTransitiveParents(leaf)
 			ArrayList<Integer> parents = EdgeDB.getTransitiveParents(leaf);
 			
-			for(int p=0;p<parents.size();p++){
-				int parent = parents.get(p);
-				
+			for (int parent: parents){
+
 				//C <- getChildren(p); areAllLeaves=true
 				boolean areAllLeaves = true;
 				ArrayList<Integer> children = EdgeDB.getChildren(parent);
@@ -51,18 +56,8 @@ public class NodeUtils {
 			}
 			if(isProminent)
 				prominentNodes.add(leaf);
-			if(prominentNodes.size()%100==10)
-				try {
-					Thread.sleep(2000);
-					System.out.println("sleeping");
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			System.out.println(prominentNodes.size());
-//			System.out.println("hello Here");
 		}
+		logger.info("Added the parent-child relations");
 		NodeDB.updateProminentNode(prominentNodes);
-		
 	}
-	
 }

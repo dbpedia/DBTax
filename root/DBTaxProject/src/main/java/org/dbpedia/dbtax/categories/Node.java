@@ -1,4 +1,4 @@
-package org.dbpedia.categories;
+package org.dbpedia.dbtax.categories;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -77,9 +77,7 @@ public class Node {
 
         Node node = (Node) o;
 
-        if (!name.equals(node.name)) return false;
-
-        return true;
+        return (name.equals(node.name));
     }
 
     @Override

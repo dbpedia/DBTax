@@ -30,30 +30,26 @@ public class InterLanguageLinksDB {
 
 	public static int getLanguageLinksCount(int pageId){
 		
-		Connection connection = DatabaseConnection.getConnection();
-		
-		PreparedStatement ps = null;
 		ResultSet rs = null;
-
+		int nodeId=0;
+		
 		String query =  "select count(*) from langlinks where ll_from=?";
 
-		try{
-			ps = connection.prepareStatement(query);
-			ps.setInt( 1, pageId);
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps= connection.prepareStatement(query)){
 
+			ps.setInt( 1, pageId);
+			
 			rs = ps.executeQuery();
-			int nodeId=0;
-			while (rs.next())
-			{
+				
+			while (rs.next()){
 				nodeId=rs.getInt(1);
 			}
 			
-			ps.close();
-			connection.close();
-			return nodeId;
 		} catch(SQLException e){
 			e.printStackTrace();
-			return 0;
 		}
+		
+		return nodeId;
 	}
 }

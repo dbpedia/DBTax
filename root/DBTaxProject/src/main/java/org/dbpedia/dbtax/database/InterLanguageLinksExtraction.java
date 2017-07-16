@@ -1,43 +1,40 @@
 package org.dbpedia.dbtax.database;
 
+import org.dbpedia.dbtax.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import org.yago.javatools.administrative.Elements;
-import org.yago.javatools.parsers.PlingStemmer;
+import java.util.ArrayList;
 
 public class InterLanguageLinksExtraction {
 
-	public static void findInterlanguageLinks(){
-		
-		// Establish Database Connection
-		Connection connection = DatabaseConnection.getConnection();
+    private static final Logger logger = LoggerFactory.getLogger(InterLanguageLinksExtraction.class);
 
-		PreparedStatement ps = null;
+	public static void findInterlanguageLinks(){
+
+		ArrayList<Node> nodes = new ArrayList<>();
 		String query = "select node_id from node where is_prominent=1;";
 
-		ResultSet rs = null;
+		try(Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query)){
 
-		try {
-			ps = connection.prepareStatement( query );
-			rs = ps.executeQuery();
-			
+			ResultSet rs = ps.executeQuery();
 
 			//We loop through the entire result set of nodes.
 			while ( rs.next() ){
-
 				int id = rs.getInt("node_id");
 				int numOfNodes = InterLanguageLinksDB.getLanguageLinksCount(id);
-				NodeDB.updateInterlanguageLinks(id, numOfNodes);
+                Node node = new Node(id,numOfNodes);
+                nodes.add(node);
 			}
-			
-			ps.close();
-			connection.close();
-			
+
+			NodeDB.updateInterlanguageLinks(nodes);
 		} catch (SQLException e) {
-			e.printStackTrace();
+	        logger.error(e.getMessage());
 		}
 	}
 
