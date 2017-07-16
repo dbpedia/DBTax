@@ -1,11 +1,10 @@
-package org.dbpedia.dbtax.categories;
+package org.dbpedia.categories;
 
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDFS;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -19,24 +18,23 @@ import java.util.*;
  */
 public class OWLGenerator {
 
-    public static void generateTBox() {
-        
-        String in = "test.paths";
-        
-        List<String> lines = Utils.getFileLines(in);
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("file missing from arguments");
+            System.exit(0);
+        }
+
+        List<String> lines = Utils.getFileLines(args[0]);
         Set<String> classes = new HashSet<>();
         Map<String,String> subClasses = new HashMap<>();
         for (String line: lines) {
             if (line.startsWith("#")) {
                 continue;
             }
-            System.out.println(line);
-            String[] parts = line.split("\\*\\*\\*");
+            String[] parts = line.split("\t");
             if (parts.length != 2) {
-            	System.out.println(line);
                 System.err.println("Invalid row with parts != 2");
             }
-
             String parent = parts[0];
             String child = parts[1];
 
@@ -66,7 +64,7 @@ public class OWLGenerator {
         }
 
         try {
-            model.write(new FileOutputStream("test.ttl"), "N-TRIPLES");
+            model.write(new FileOutputStream(args[0] + ".ttl"), "TURTLE");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

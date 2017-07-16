@@ -1,13 +1,13 @@
 package org.dbpedia.dbtax.categories;
 
-import java.io.BufferedReader;
+import org.dbpedia.dbtax.database.NodeDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -18,55 +18,55 @@ import java.util.Set;
  * @author Dimitris Kontokostas
  * @since 7/11/14 9:25 AM
  */
-public class LeafToRoot {
+public class LeafToRoot{
 
-    public static void main(String[] args) {
+    private static final Logger logger = LoggerFactory.getLogger(LeafToRoot.class);
+    private LeafToRoot() {}
+
+    public static void cycleRemoval(){
     	
-        Set<String> leafs = HierarchyGenerator.generateInstances();
+        Set<String> leafs = NodeDB.getDisinctleafNodeNames();
         
         List<Relation> hierarchy =  HierarchyGenerator.mainFunc();
 
-        List<List<String>> path_list = new ArrayList<>();
+        List<List<String>> pathList = new ArrayList<>();
 
         for (String leaf : leafs) {
-            List<String> current_path = new ArrayList<>();
-            current_path.add(leaf);
+            List<String> currentPath = new ArrayList<>();
+            currentPath.add(leaf);
 
-            String current_resource = leaf;
-            String current_parent = getParentResource(hierarchy, current_resource);
+            String currentResource = leaf;
+            String currentParent = getParentResource(hierarchy, currentResource);
             boolean cycle = false;
-            while (!current_parent.isEmpty()) {
-                current_path.add(current_parent);
-                current_resource = current_parent;
-                current_parent = getParentResource(hierarchy, current_resource);
-                if (current_path.contains(current_parent)) {
+            while (!currentParent.isEmpty()) {
+                currentPath.add(currentParent);
+                currentResource = currentParent;
+                currentParent = getParentResource(hierarchy, currentResource);
+                if (currentPath.contains(currentParent)) {
                     cycle = true;
-                    hierarchy = deleteResource(hierarchy, current_parent, current_resource);
-                    System.out.println("Cycle when adding:" + current_path.toString());
+                    hierarchy = deleteResource(hierarchy,  currentResource);
+                    String pathToCycle = currentPath.toString();
+                    logger.info("Cycle when adding: %s" , pathToCycle);
                     break;
                 }
 
             }
             if (!cycle)
-                path_list.add(current_path);
+                pathList.add(currentPath);
         }
 
         try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("test.paths"), "UTF8"))){
             for(Relation r: hierarchy) {
                 writer.write(r.getParent() + "***" + r.getChild() + " \n ");
             }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
 
     }
 
-    static List<Relation> deleteResource(List<Relation> hierarchy, String parent, String child){
+    static List<Relation> deleteResource(List<Relation> hierarchy, String child){
     	for(int i=0;i<hierarchy.size();i++){
     		Relation r = hierarchy.get(i);
     		if(r.getChild() != null && r.getChild().contains(child))
@@ -74,6 +74,7 @@ public class LeafToRoot {
     	}
     	return hierarchy;
     }
+
     /* returns the resource or empty String */
     static String getParentResource(List<Relation> hierarchy, String search) {
     	String result ="";
@@ -83,4 +84,5 @@ public class LeafToRoot {
     	    }
     	return result;
     }
+
 }

@@ -24,15 +24,13 @@ public class PageDB {
 		int resultId = -1;
 
 		String query = "SELECT page_id FROM `page` WHERE `page_title` = ? AND page_namespace=14";
-		
-		ResultSet rs = null;
 
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps =	connection.prepareStatement( query )){
 		
 			ps.setString(1, catPageTitle);
 			
-			rs = ps.executeQuery();
+			ResultSet rs = ps.executeQuery();
 
 			while( rs.next() ){
 				resultId= rs.getInt("page_id");

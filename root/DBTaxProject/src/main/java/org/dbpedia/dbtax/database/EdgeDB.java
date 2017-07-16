@@ -1,5 +1,8 @@
 package org.dbpedia.dbtax.database;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +12,7 @@ import java.util.ArrayList;
 
 public class EdgeDB {
 
+	private static final Logger logger = LoggerFactory.getLogger(EdgeDB.class);
 	/*
 	 * This function is to insert an Edge which captures the 
 	 * Parent-Child Relationship among categories
@@ -24,7 +28,7 @@ public class EdgeDB {
 			ps.setInt(2, chidId);
 			ps.executeUpdate();
 		}catch(SQLException e){
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 	
@@ -34,25 +38,22 @@ public class EdgeDB {
 	public static ArrayList<Integer> getTransitiveParents(int leafNode){
 		
 		String query =  "SELECT parent_id FROM edges WHERE child_id =?";
-		
-		ResultSet rs = null;
+		ArrayList<Integer> parents= new ArrayList<>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)) {
 			
 			ps.setInt( 1, leafNode);
-			rs = ps.executeQuery();
+			ResultSet rs = ps.executeQuery();
 			
-			ArrayList<Integer> parents= new ArrayList<Integer>();
 			while (rs.next()){
 				parents.add(rs.getInt(1));
 			}
-			return parents;
 	    }catch(SQLException e) {
-			e.printStackTrace();
-			return null;
-		}		
-	}	
+			logger.error(e.getMessage());
+		}
+		return parents;
+	}
 	
 	/*
 	 * This method returns all the children nodes of the given node
@@ -62,23 +63,21 @@ public class EdgeDB {
 		
 		String query =  "SELECT child_id FROM edges WHERE parent_id=?";
 
-		ResultSet rs = null;
-		
-		try(Connection connection = DatabaseConnection.getConnection();
+        ArrayList<Integer> childrenList= new ArrayList<>();
+
+        try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)) {
 			
 			ps.setInt( 1, parentId);
-			rs = ps.executeQuery();
-			ArrayList<Integer> childrenList= new ArrayList<Integer>();
-
+			ResultSet rs = ps.executeQuery();
 			while (rs.next()){
 				childrenList.add(rs.getInt("child_id"));
 			}
-			return childrenList;
 	    } catch (SQLException e) {
-			e.printStackTrace();
-			return null;
+			logger.error(e.getMessage());
 		}
+
+        return childrenList;
 	}	
 
 }

@@ -4,12 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.dbpedia.dbtax.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.dbpedia.dbtax.ThresholdCalculations;
 
 /*
  * Extract Leaves Function adds the leaf nodes and their corresponding Edges 
@@ -42,8 +43,8 @@ public class LeafExtractionDB {
 		 * The above query gets all categories names of the actual article pages 
 		 * With no sub categories
 		 */
+		Set<Node> nodeMap = new HashSet<>();
 
-//        Random rand = new Random();
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)) {
 			
@@ -53,22 +54,14 @@ public class LeafExtractionDB {
 			//We loop through the entire result set of leaves.
 			while ( rs.next() ){
 
-				String catName = rs.getString("cat_title");
+				String catName = rs.getString("cat_title").trim();
 
 				//Get the page id of category 
 				int pageid = PageDB.getPageId(catName);
 
 				if(pageid!=-1){
 					//Add the leaf node to the database Node table
-					NodeDB.insertNode(pageid, catName);
-               /*     if (rand.nextInt(50) % 5 == 0) {
-                        try {
-                            Thread.sleep(2000);
-                            logger.debug("Sleeeping");
-                        } catch (InterruptedException e) {
-                            logger.error(e.getMessage());
-                        }
-                    }*/
+					nodeMap.add(new Node(pageid,catName));
 
                     //The below function is to find the immediate parents of the categories
 					//And add them to corresponding node and edge databases
@@ -78,5 +71,7 @@ public class LeafExtractionDB {
 		} catch ( SQLException e ){
 			logger.error(e.getMessage());
 		}
+
+        NodeDB.insertNode(nodeMap);
 	}
 }

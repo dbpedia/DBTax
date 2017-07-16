@@ -1,5 +1,8 @@
 package org.dbpedia.dbtax;
 
+import org.dbpedia.dbtax.categories.LeafToRoot;
+import org.dbpedia.dbtax.categories.OWLGenerator;
+import org.dbpedia.dbtax.database.LeafExtractionDB;
 import org.dbpedia.dbtax.database.PluralIdenification;
 import org.dbpedia.dbtax.database.InterLanguageLinksExtraction;
 
@@ -11,22 +14,11 @@ public class DBTaxPipeline {
     private static final Logger logger = LoggerFactory.getLogger(DBTaxPipeline.class);
 
     public static void main(String[] args) {
-/*        try(Connection con = DatabaseConnection.getConnection()){
-            ScriptRunner runner = new ScriptRunner(con,true, true);
-            runner.runScript(new BufferedReader(new FileReader("sample.sql")));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
         logger.info("Hello World");
 
-
         //Stage 1: Extract Leaf Nodes
-//        LeafExtractionDB.extractLeaves();
+        LeafExtractionDB.extractLeaves();
         logger.info("Leaf Extraction is completed.");
 
 		//Stage 2: Find Prominent Nodes
@@ -40,7 +32,19 @@ public class DBTaxPipeline {
 		// Stage 2 C: Interlanguage links as weights
 		InterLanguageLinksExtraction.findInterlanguageLinks();
 		logger.info("Calculated inter language links score");
-		
+
+		//Stage 3: Hierarchy generator, Cycle Removal and pruning instances
+        LeafToRoot.cycleRemoval();
+        logger.info("Hierarchy generation, Cycle removal and pruning instances step done");
+
+        OWLGenerator.generateTBox();
+        logger.info("Generation of T-Box labels");
+
+        //Stage 4: PageTypeAssignment
+        PageTypeAssignment aBox = new PageTypeAssignment();
+        aBox.assignPageTypes();
+		logger.info("Page types are assigned and in file named pageTypeAssignment.ttl");
+
 		logger.info("End of World !!");
     }
 }

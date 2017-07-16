@@ -43,9 +43,9 @@ public class PluralIdenification {
                 String lemmatizedHead = sentence.lemma(headIndex);
 
 				if(lemmatizedHead.equals(head))
-					NodeDB.updatePluralNode(rs.getInt("node_id"), lemmatizedHead, true);
-				else
 					NodeDB.updatePluralNode(rs.getInt("node_id"), lemmatizedHead, false);
+				else
+					NodeDB.updatePluralNode(rs.getInt("node_id"), lemmatizedHead, true);
 			}
 			
 		} catch (SQLException e) {

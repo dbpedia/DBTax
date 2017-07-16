@@ -4,59 +4,81 @@ import java.io.*;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.dbpedia.dbtax.database.NodeDB;
 import org.dbpedia.dbtax.database.PageDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PageTypeAssignment {
+
     private static final Logger logger = LoggerFactory.getLogger(PageTypeAssignment.class);
-    public static void main(String[] argv) {
+    private OntModel model;
+    String headNamespace = "http://dbpedia.org/dbtax/";
+    String resourceNamespace ="http://dbpedia.org/resource/";
+
+    public PageTypeAssignment() {
+        model= ModelFactory.createOntologyModel();
+    }
+
+    public void assignPageTypes() {
+
         Set<String> heads = NodeDB.getDisinctheads();
-        logger.debug("Got the heads");
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("pageTypeAssigment.ttl"), "UTF8"))) {
-            for (String head : heads) {
-                Set<String> categories = NodeDB.getCategoriesByHead(head);
-                logger.debug("got cat for head: "+head);
-                for (String category : categories) {
-                    logger.debug("cat is "+ category);
-                    List<Page> pages = PageDB.getPagesByCategory(category);
-                    logger.debug("got pages for category"+ category);
-                    for (Page page : pages) {
-                        logger.debug(page.getName() + " " + category + " " + head);
-                        if (page.getNamespace() == 0) {
-                            //namespace==0 means it's a article page
-                            writer.write("<http://dbpedia.org/resource/" + page.getName() + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/dbtax/" + head + "> . \n");
-                        }
-                        if (page.getNamespace() == 14) {
-                            //namespace==14 means it's a categorypage recurcive the categorypage
-                            //recursion causes segmentation error go for only fist child
-                            // getPagesForCategory( page.getPageName() );
-//                            getPagesForCategoryFirstChild(page.getName());
-                        }
-                    }
-                }
+
+        for (String head : heads) {
+            Set<String> categories = NodeDB.getCategoriesByHead(head);
+
+            for (String category : categories) {
+                assignPagesForCategory(category,head);
             }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        }
+
+        //Output the generated model to a file.
+        try {
+            model.write(new FileOutputStream("test.ttl"), "N-TRIPLES");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
+        }
+
+    }
+
+    private void assignPagesForCategory(String category, String head){
+
+        List<Page> pages = PageDB.getPagesByCategory(category);
+
+        for (Page page : pages) {
+            String pageName =page.getName();
+
+            //namespace==0 means it's a article page
+            if (page.getNamespace() == 0) {
+                Resource resource = model.createResource( resourceNamespace+ page.getName());
+                resource.addProperty(RDF.type, model.createResource(headNamespace+head));
+            }
+
+            //namespace==14 means it's a category and have some pages associated with it.
+            if (page.getNamespace() == 14)
+                logger.info("entered loop: "+category+" "+pageName);
+                assignPagesForLevelCategory(pageName,head);
         }
     }
 
-    public static void getPagesForCategoryFirstChild(String catName) {
-        List<Page> pages = PageDB.getPagesByCategory(catName);
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("testp.ttl"), "UTF8"))) {
-            for (Page page : pages) {
-                if (page.getNamespace() == 0) {
-                    //namespace==0 means it's a article page
-                    writer.write("<http://dbpedia.org/resource/" + page.getName() + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/dbtax/" + catName + "> . \n");
-                }
+    private void assignPagesForLevelCategory(String category, String head) {
+
+        List<Page> pages = PageDB.getPagesByCategory(category);
+
+        for (Page page : pages) {
+            String pageName = page.getName();
+
+            //namespace==0 means it's a article page
+            if (page.getNamespace() == 0) {
+                Resource resource = model.createResource(resourceNamespace + page.getName());
+                    resource.addProperty(RDF.type, model.createResource(headNamespace + head));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
         }
     }
+
 }
