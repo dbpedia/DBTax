@@ -77,9 +77,7 @@ public class Node {
 
         Node node = (Node) o;
 
-        if (!name.equals(node.name)) return false;
-
-        return true;
+        return (name.equals(node.name));
     }
 
     @Override

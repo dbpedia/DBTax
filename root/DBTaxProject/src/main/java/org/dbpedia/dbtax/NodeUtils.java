@@ -57,6 +57,7 @@ public class NodeUtils {
 			if(isProminent)
 				prominentNodes.add(leaf);
 		}
+		logger.info("Added the parent-child relations");
 		NodeDB.updateProminentNode(prominentNodes);
 	}
 }

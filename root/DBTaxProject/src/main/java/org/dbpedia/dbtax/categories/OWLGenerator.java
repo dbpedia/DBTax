@@ -6,6 +6,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -18,9 +20,10 @@ import java.util.*;
  * @since 9/15/14 3:34 PM
  */
 public class OWLGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(OWLGenerator.class);
 
     public static void generateTBox() {
-        
+
         String in = "test.paths";
         
         List<String> lines = Utils.getFileLines(in);
@@ -49,7 +52,7 @@ public class OWLGenerator {
         String namespace = "http://dbpedia.org/dbtax/";
         model.setNsPrefix("dbtax", namespace);
         for (String cls: classes) {
-            if (cls.equals("Content")) {
+            if ("Content".equals(cls)) {
                 continue;
             }
             Resource resource = model.createResource(namespace + cls);
@@ -57,7 +60,7 @@ public class OWLGenerator {
 
             String parent = subClasses.get(cls);
             if (parent != null) {
-                if (parent.equals("Content") ) {
+                if ("Content".equals(parent) ) {
                     resource.addProperty(RDFS.subClassOf, OWL.Thing);
                 } else {
                     resource.addProperty(RDFS.subClassOf, model.createResource(namespace + parent));
@@ -68,7 +71,7 @@ public class OWLGenerator {
         try {
             model.write(new FileOutputStream("test.ttl"), "N-TRIPLES");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
         }
     }
 }

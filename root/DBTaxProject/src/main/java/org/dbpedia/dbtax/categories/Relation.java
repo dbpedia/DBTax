@@ -33,10 +33,8 @@ public class Relation implements Comparable {
 
         Relation relation = (Relation) o;
 
-        if (child != null ? !child.equals(relation.child) : relation.child != null) return false;
-        if (parent != null ? !parent.equals(relation.parent) : relation.parent != null) return false;
+        return (!(child != null ? !child.equals(relation.child) : relation.child != null) ||(parent != null ? !parent.equals(relation.parent) : relation.parent != null));
 
-        return true;
     }
 
     @Override

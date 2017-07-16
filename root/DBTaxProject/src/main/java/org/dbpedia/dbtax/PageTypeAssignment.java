@@ -17,8 +17,8 @@ public class PageTypeAssignment {
 
     private static final Logger logger = LoggerFactory.getLogger(PageTypeAssignment.class);
     private OntModel model;
-    String headNamespace = "http://dbpedia.org/dbtax/";
-    String resourceNamespace ="http://dbpedia.org/resource/";
+    private String headNamespace = "http://dbpedia.org/dbtax/";
+    private String resourceNamespace ="http://dbpedia.org/resource/";
 
     public PageTypeAssignment() {
         model= ModelFactory.createOntologyModel();
@@ -74,8 +74,8 @@ public class PageTypeAssignment {
 
             //namespace==0 means it's a article page
             if (page.getNamespace() == 0) {
-                Resource resource = model.createResource(resourceNamespace + page.getName());
-                    resource.addProperty(RDF.type, model.createResource(headNamespace + head));
+                Resource resource = model.createResource(resourceNamespace + pageName);
+                resource.addProperty(RDF.type, model.createResource(headNamespace + head));
             }
 
         }

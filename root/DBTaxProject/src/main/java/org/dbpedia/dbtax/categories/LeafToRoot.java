@@ -66,7 +66,7 @@ public class LeafToRoot{
 
     }
 
-    static List<Relation> deleteResource(List<Relation> hierarchy, String child){
+    private static List<Relation> deleteResource(List<Relation> hierarchy, String child){
     	for(int i=0;i<hierarchy.size();i++){
     		Relation r = hierarchy.get(i);
     		if(r.getChild() != null && r.getChild().contains(child))
@@ -76,7 +76,7 @@ public class LeafToRoot{
     }
 
     /* returns the resource or empty String */
-    static String getParentResource(List<Relation> hierarchy, String search) {
+    private static String getParentResource(List<Relation> hierarchy, String search) {
     	String result ="";
     	for(Relation r : hierarchy){
     	        if(r.getChild() != null && r.getChild().contains(search))
