@@ -71,7 +71,7 @@ public class OWLGenerator {
         try {
             model.write(new FileOutputStream("test.ttl"), "N-TRIPLES");
         } catch (FileNotFoundException e) {
-
+            logger.error(e.getMessage());
         }
     }
 }

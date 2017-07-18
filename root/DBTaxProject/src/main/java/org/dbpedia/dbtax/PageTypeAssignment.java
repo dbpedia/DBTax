@@ -1,6 +1,7 @@
 package org.dbpedia.dbtax;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +33,8 @@ public class PageTypeAssignment {
             Set<String> categories = NodeDB.getCategoriesByHead(head);
 
             for (String category : categories) {
-                assignPagesForCategory(category,head);
+                List<String> currentPath = new ArrayList<>();
+                assignPagesForCategory(category,head, currentPath);
             }
         }
 
@@ -45,10 +47,11 @@ public class PageTypeAssignment {
 
     }
 
-    private void assignPagesForCategory(String category, String head){
+
+    private void assignPagesForCategory(String category, String head, List<String> currentPath){
 
         List<Page> pages = PageDB.getPagesByCategory(category);
-
+        currentPath.add(category);
         for (Page page : pages) {
             String pageName =page.getName();
 
@@ -61,23 +64,11 @@ public class PageTypeAssignment {
             //namespace==14 means it's a category and have some pages associated with it.
             if (page.getNamespace() == 14)
                 logger.info("entered loop: "+category+" "+pageName);
-                assignPagesForLevelCategory(pageName,head);
-        }
-    }
-
-    private void assignPagesForLevelCategory(String category, String head) {
-
-        List<Page> pages = PageDB.getPagesByCategory(category);
-
-        for (Page page : pages) {
-            String pageName = page.getName();
-
-            //namespace==0 means it's a article page
-            if (page.getNamespace() == 0) {
-                Resource resource = model.createResource(resourceNamespace + pageName);
-                resource.addProperty(RDF.type, model.createResource(headNamespace + head));
-            }
-
+                //cycle detection
+                if(!currentPath.contains(pageName))
+                    assignPagesForCategory(pageName,head,currentPath);
+                else
+                    logger.info("cycle found!"+ currentPath.toString());
         }
     }
 

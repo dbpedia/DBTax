@@ -77,6 +77,7 @@ public class Node {
 
         Node node = (Node) o;
 
+
         return (name.equals(node.name));
     }
 
