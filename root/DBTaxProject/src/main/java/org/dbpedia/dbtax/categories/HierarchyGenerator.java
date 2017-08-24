@@ -18,11 +18,11 @@ import java.util.*;
  */
 public class HierarchyGenerator {
 
+    private static Logger logger = LoggerFactory.getLogger(HierarchyGenerator.class);
+
     private HierarchyGenerator() {
 
     }
-
-    private static Logger logger = LoggerFactory.getLogger(HierarchyGenerator.class);
 
     private static String normalizeName(String original) {
         if (original == null)
@@ -147,10 +147,8 @@ public class HierarchyGenerator {
             InstancesDB instancesDB = new InstancesDB(connection);
             ProminentNodeDB prominentNodeDB = new ProminentNodeDB(connection);
 
-            int count = 0;
             /* Fill the existing tree */
             while ((line = in.readLine()) != null) {
-                count++;
                 String[] parts = line.split("\t");
                 if (parts.length != 2) {
                     logger.info("Invalid row with parts != 2");
@@ -188,7 +186,7 @@ public class HierarchyGenerator {
                 if (parentName.equals(childName)) {
                     continue;
                 }
-                if (parentName.equals("Category") || parentName.equals("Categories")) {
+                if ("Category".equals(parentName) || "Categories".equals(parentName)) {
                     continue;
                 }
 
@@ -208,7 +206,6 @@ public class HierarchyGenerator {
     }
 
     private static void storeHeads(Map<String, Node> nodeMap) {
-        Set<String> heads = new HashSet<>();
 
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("heads"), "UTF8"))) {
             for (String key : nodeMap.keySet()) {

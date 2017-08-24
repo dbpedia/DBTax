@@ -22,19 +22,19 @@ public class DBTaxPipeline {
         LeafExtractionDB.extractLeaves();
         logger.info("Stage 1: Leaf Extraction step is completed.");
 
-		//Stage 2: Find Prominent Nodes
-		NodeUtils.findProminentNodes();
-		logger.info("Stage 2A: Prominent Node discovery algorithm is ran.");
+        //Stage 2: Find Prominent Nodes
+        NodeUtils.findProminentNodes();
+        logger.info("Stage 2A: Prominent Node discovery algorithm is ran.");
 
-		// Stage 2 B: NLP for is a relations
-		PluralIdenification.findPlural();
-		logger.info("Stage 2B: Finding plural is completed.");
+        // Stage 2 B: NLP for is a relations
+        PluralIdenification.findPlural();
+        logger.info("Stage 2B: Finding plural is completed.");
 
-		// Stage 2 C: Interlanguage links as weights
-		InterLanguageLinksExtraction.findInterlanguageLinks();
-		logger.info("Stage 2C: Calculated inter language links score");
+        // Stage 2 C: Interlanguage links as weights
+        InterLanguageLinksExtraction.findInterlanguageLinks();
+        logger.info("Stage 2C: Calculated inter language links score");
 
-		//Stage 3: Hierarchy generator, Cycle Removal and pruning instances
+        //Stage 3: Hierarchy generator, Cycle Removal and pruning instances
         LeafToRootGraphGeneneration.generateGraph();
         logger.info("Stage 3: Graph is generated.");
 
@@ -47,8 +47,8 @@ public class DBTaxPipeline {
         //Stage 4: PageTypeAssignment
         PageTypeAssignment aBox = new PageTypeAssignment();
         aBox.assignPageTypes();
-		logger.info("Stage4: Page types are assigned. File named: A-BoxHeads.ttl");
+        logger.info("Stage4: Page types are assigned. File named: A-BoxHeads.ttl");
 
-		logger.info("End of World !!");
+        logger.info("End of World !!");
     }
 }

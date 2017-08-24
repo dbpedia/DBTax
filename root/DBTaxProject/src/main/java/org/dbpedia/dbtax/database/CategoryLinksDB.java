@@ -1,6 +1,5 @@
 package org.dbpedia.dbtax.database;
 
-import org.dbpedia.dbtax.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
