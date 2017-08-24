@@ -33,11 +33,11 @@ public class OWLGenerator {
             if (line.startsWith("#")) {
                 continue;
             }
-            System.out.println(line);
+
             String[] parts = line.split("\\*\\*\\*");
             if (parts.length != 2) {
-            	System.out.println(line);
-                System.err.println("Invalid row with parts != 2");
+            	logger.debug(line);
+                logger.error("Invalid row with parts != 2");
             }
 
             String parent = parts[0];
@@ -71,7 +71,7 @@ public class OWLGenerator {
         try {
             model.write(new FileOutputStream("test.ttl"), "N-TRIPLES");
         } catch (FileNotFoundException e) {
-
+            logger.error(e.getMessage());
         }
     }
 }

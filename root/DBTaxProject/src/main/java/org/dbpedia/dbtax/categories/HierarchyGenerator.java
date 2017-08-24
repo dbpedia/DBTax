@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import org.dbpedia.dbtax.database.DatabaseConnection;
-import org.dbpedia.dbtax.utils.DBpediaInstances;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
