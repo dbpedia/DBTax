@@ -49,4 +49,9 @@ public class Utils {
         }
         return null;
     }
+    public static String normalizeName(String original) {
+        if(original.length() == 0)
+            return original;
+        return original.trim().substring(0, 1).toUpperCase() + original.substring(1);
+    }
 }

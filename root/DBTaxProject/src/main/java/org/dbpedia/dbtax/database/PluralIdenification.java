@@ -1,9 +1,8 @@
 package org.dbpedia.dbtax.database;
 
-
 import edu.stanford.nlp.ie.machinereading.structure.Span;
-import edu.stanford.nlp.simple.*;
-
+import edu.stanford.nlp.simple.Sentence;
+import org.dbpedia.dbtax.categories.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 
 public class PluralIdenification {
 
@@ -27,10 +25,12 @@ public class PluralIdenification {
 		try(Connection connection = DatabaseConnection.getConnection();
 			PreparedStatement ps = connection.prepareStatement( query )){
 
+		    NodeDB nodeDB = new NodeDB(connection);
             ResultSet rs = ps.executeQuery();
 
 			//We loop through the entire result set of nodes.
-			while ( rs.next() ){
+			while ( rs.next() ) {
+
 
 				String catName = rs.getString("category_name");
 				catName = catName.replace("_", " ");
@@ -41,11 +41,13 @@ public class PluralIdenification {
                 int headIndex = sentence.algorithms().headOfSpan(new Span(0,sentence.length()));
                 String head = sentence.originalText(headIndex);
                 String lemmatizedHead = sentence.lemma(headIndex);
+				String normalizedHead = Utils.normalizeName(lemmatizedHead);
 
-				if(lemmatizedHead.equals(head))
-					NodeDB.updatePluralNode(rs.getInt("node_id"), lemmatizedHead, false);
-				else
-					NodeDB.updatePluralNode(rs.getInt("node_id"), lemmatizedHead, true);
+				if(!lemmatizedHead.equals(head))
+                    nodeDB.updatePluralNode(rs.getInt("node_id"), normalizedHead, true);
+                else
+                	nodeDB.updatePluralNode(rs.getInt("node_id"), normalizedHead, false);
+
 			}
 			
 		} catch (SQLException e) {

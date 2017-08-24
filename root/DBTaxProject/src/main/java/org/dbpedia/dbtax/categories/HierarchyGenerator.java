@@ -1,116 +1,50 @@
 package org.dbpedia.dbtax.categories;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
 import org.dbpedia.dbtax.database.DatabaseConnection;
+import org.dbpedia.dbtax.database.InstancesDB;
+import org.dbpedia.dbtax.database.ProminentNodeDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * User: Dimitris Kontokostas
  * Description
  * Created: 6/17/14 4:33 PM
- * This code corresponds to Class Removal Algorithm 2 in paper.
- * 
  */
-
 public class HierarchyGenerator {
 
-	private static final Logger logger = LoggerFactory.getLogger(HierarchyGenerator.class);
-    private static final Node contentNode = new Node("Content");
-    private static long instancesSkipped = 0;
-
-    private HierarchyGenerator(){ }
-
-	public static List<Relation> mainFunc() {
-
-        //Instances from the files
-		Set<String> instances = DBpediaInstances.generateInstances();
-
-		//Pruning of Instances happens here
-		Map<String, Node> nodeMap = generateNodeMap(instances);
-
-		Set<Node> latestLevelCategories = new HashSet<>();
-		List<Relation> hierarchy = new LinkedList<>();
-
-        addParentToParentlessNodes(nodeMap);
-
-        //Starting with content nodes
-		latestLevelCategories.add(contentNode);
-		int level = 0;
-
-		while (true) {
-			logger.info("Level: %d contains: %d nodes", level,latestLevelCategories.size());
-
-			Set<Node> currentLevel = new HashSet<>();
-
-			int levelSkippedNodes = 0;
-			int levelAddedRelations = 0;
-
-			for (Node parentNode: latestLevelCategories) {
-				parentNode.setLevel(level);
-
-				int skippedNodes = 0;
-				int addedRelations = 0;
-				for (Node childNode: parentNode.getChildren()) {
-					if (childNode.hasAssignedLevel()) { // means already assigned level so skip
-						skippedNodes++;
-					}
-					else {
-
-						currentLevel.add(childNode);
-						Relation relation = new Relation(parentNode.getName(), childNode.getName());
-						hierarchy.add(relation);
-						addedRelations++;
-					}
-
-				}
-				levelAddedRelations += addedRelations;
-				levelSkippedNodes += skippedNodes;
-			}
-			logger.info("\tAdded %d Skipped %d",levelAddedRelations ,levelSkippedNodes );
-
-			if (currentLevel.isEmpty()) {
-				break;
-			}
-
-			latestLevelCategories = currentLevel;
-			level++;
-		}
-
-		logger.info("New hierarchy contains : %d" , hierarchy.size());
-
-		countUnassignedNodes(nodeMap);
-
-		return hierarchy;
-	}
-
-	private static void countUnassignedNodes(Map<String, Node> nodeMap){
-
-        long unussignedNodesCount = 0;
-        for (Node node: nodeMap.values()) {
-            if (node.getLevel() <0) {
-                unussignedNodesCount++;
-            }
-        }
-
-        logger.info("Total unussigned nodes: %d" , unussignedNodesCount);
+    private HierarchyGenerator() {
 
     }
-	private static void addParentToParentlessNodes(Map<String, Node> nodeMap){
 
+    private static Logger logger = LoggerFactory.getLogger(HierarchyGenerator.class);
+
+    private static String normalizeName(String original) {
+        if (original == null)
+            return original;
+        return original.substring(0, 1).toUpperCase() + original.substring(1);
+    }
+
+    public static void generateHierarchy() {
+
+        //To Do: Change to uniquegraph.paths to improve performance
+        Map<String, Node> nodeMap = generateNodeMap("graph.paths");
+
+
+        Node contentNode = new Node("Content");
+
+
+        ///* put all parentless nodes under content *//*
         long nodeCount = 0;
         long parentlessNodes = 0;
         long childlessNodes = 0;
-
-        for (Node node: nodeMap.values()) {
-
-		/* put all parentless nodes under content */
-            if (node.getParent() == null ) {
+        for (Node node : nodeMap.values()) {
+            if (node.getParent() == null) {
                 contentNode.addChildren(node);
                 parentlessNodes++;
             }
@@ -122,89 +56,167 @@ public class HierarchyGenerator {
                 childlessNodes++;
             }
         }
-        logger.info("Total distinct nodes: %d", nodeMap.size());
-        logger.info("Total parentless nodes: %d", parentlessNodes);
-        logger.info("Total childless nodes: %d", childlessNodes);
-        logger.info("Total child count: %d ", nodeCount);
+        storeHeads(nodeMap);
 
-    }
-
-    private static String normalizeName(String original) {
-        if(original.length() == 0)
-            return original;
-        return original.trim().substring(0, 1).toUpperCase() + original.substring(1);
-    }
-
-	public static Map<String, Node> generateNodeMap( Set<String> instances) {
-
-		Map<String, Node> nodeMap = new HashMap<>();
-
-		String query = "SELECT pnode.head_of_name parent_name, cnode.head_of_name child_name "
-				+" FROM edges "
-				+" JOIN node pnode ON edges.parent_id = pnode.node_id "
-				+" JOIN node cnode ON edges.child_id = cnode.node_id"
-				+" WHERE cnode.category_name is NOT NULL"
-				+ " AND pnode.category_name is NOT NULL;";
+        logger.info("Total distinct nodes: " + nodeMap.size());
+        logger.info("Total parentless nodes: " + parentlessNodes);
+        logger.info("Total childless nodes: " + childlessNodes);
+        logger.info("Total child count: " + nodeCount);
 
 
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)) {
+        Set<Node> latestLevelCategories = new HashSet<>();
+        List<Relation> hierarchy = new LinkedList<>();
 
-			ResultSet rs = ps.executeQuery();
 
-			while (rs.next()) {
-				String parentName  = normalizeName(rs.getString("parent_name"));
-				String childName   = normalizeName(rs.getString("child_name"));
+        latestLevelCategories.add(contentNode);
+        int level = 0;
 
-				if(!isInstance(parentName, childName, instances))
-				    continue;
+        while (true) {
+            logger.info("Level: " + level + " contains: " + latestLevelCategories.size() + " nodes");
+            Set<Node> currentLevel = new HashSet<>();
 
-				Node parentNode = nodeMap.get(parentName);
-				Node childNode  = nodeMap.get(childName);
+            int levelSkippedNodes = 0;
+            int levelAddedRelations = 0;
+            for (Node parentNode : latestLevelCategories) {
+                parentNode.setLevel(level);
 
-				if (childNode == null) {
-					childNode = new Node(childName);
-					nodeMap.put(childName, childNode);
-				}
+                int skippedNodes = 0;
+                int addedRelations = 0;
+                for (Node childNode : parentNode.getChildren()) {
+                    if (childNode.hasAssignedLevel()) { // means already assigned level so skip
+                        skippedNodes++;
 
-				if(isChildInvalid(parentName, childName))
-				    continue;
+                    } else {
 
-				if (parentNode == null ) {
-					parentNode = new Node(parentName);
-					nodeMap.put(parentName, parentNode);
-				}
+                        currentLevel.add(childNode);
+                        Relation relation = new Relation(parentNode.getName(), childNode.getName());
+                        hierarchy.add(relation);
+                        addedRelations++;
+                    }
 
-				parentNode.addChildren(childNode);
-			}
-		} catch (SQLException e) {
+                }
+                //
+                levelAddedRelations += addedRelations;
+                levelSkippedNodes += skippedNodes;
+            }
+            logger.info("\tAdded " + levelAddedRelations + " Skipped " + levelSkippedNodes);
+
+            if (currentLevel.isEmpty()) {
+                break;
+            }
+
+            latestLevelCategories = currentLevel;
+            level++;
+
+
+        }
+
+        logger.info("New hierarchy contains : " + hierarchy.size());
+
+        long unussignedNodesCount = 0;
+        for (Node node : nodeMap.values()) {
+            if (node.getLevel() < 0) {
+                unussignedNodesCount++;
+            }
+        }
+
+        logger.info("Total unussigned nodes: " + unussignedNodesCount);
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("ss.distinct.tsv"), "UTF8"))) {
+
+            Collections.sort(hierarchy);
+            for (Relation rel : hierarchy) {
+                writer.write(rel.getParent() + "\t" + rel.getChild() + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
             logger.error(e.getMessage());
-		}
-
-		return nodeMap;
-	}
-
-	private static boolean isInstance(String parentName, String childName, Set<String> instances){
-
-        if (parentName.toLowerCase().contains("wikidata") || childName.toLowerCase().contains("wikidata")) {
-            return false;
         }
 
-        if (Character.isDigit(parentName.charAt(0)) || Character.isDigit(childName.charAt(0))) {
-            return false;
-        }
-
-        if (instances.contains(parentName.toLowerCase()) || instances.contains(childName.toLowerCase())) {
-            instancesSkipped++;
-            return false;
-        }
-
-        logger.debug("Skipped a total of %d relations containing instances",instancesSkipped);
-
-        return true;
     }
 
-    private static boolean isChildInvalid(String parentName, String childName){
-	    return (parentName.equals(childName)||"Category".equals(parentName) || "Categories".equals(parentName));
+    public static Map<String, Node> generateNodeMap(String filename) {
+        Map<String, Node> nodeMap = new HashMap<>();
+
+        String line = null;
+        long instancesSkipped = 0;
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+             Connection connection = DatabaseConnection.getConnection()) {
+
+            InstancesDB instancesDB = new InstancesDB(connection);
+            ProminentNodeDB prominentNodeDB = new ProminentNodeDB(connection);
+
+            int count = 0;
+            /* Fill the existing tree */
+            while ((line = in.readLine()) != null) {
+                count++;
+                String[] parts = line.split("\t");
+                if (parts.length != 2) {
+                    logger.info("Invalid row with parts != 2");
+                }
+                String parentName = normalizeName(parts[0].trim());
+                String childName = normalizeName(parts[1].trim());
+
+                if ("Null".equals(parentName) || "Null".equals(childName)) {
+                    continue;
+                }
+
+                if (!prominentNodeDB.isProminent(parentName) || !prominentNodeDB.isProminent(childName)) {
+                    continue;
+                }
+
+                if (parentName.toLowerCase().contains("wikidata") || childName.toLowerCase().contains("wikidata")) {
+                    continue;
+                }
+
+                if (Character.isDigit(parentName.charAt(0)) || Character.isDigit(childName.charAt(0))) {
+                    continue;
+                }
+                if (instancesDB.isAnInstance(parentName.toLowerCase(), childName.toLowerCase())) {
+                    instancesSkipped++;
+                    continue;
+                }
+
+                Node parentNode = nodeMap.get(parentName);
+                Node childNode = nodeMap.get(childName);
+                if (childNode == null) {
+                    childNode = new Node(childName);
+                    nodeMap.put(childName, childNode);
+                }
+
+                if (parentName.equals(childName)) {
+                    continue;
+                }
+                if (parentName.equals("Category") || parentName.equals("Categories")) {
+                    continue;
+                }
+
+                if (parentNode == null) {
+                    parentNode = new Node(parentName);
+                    nodeMap.put(parentName, parentNode);
+                }
+
+                parentNode.addChildren(childNode);
+            }
+        } catch (SQLException | IOException e) {
+            logger.error(e.getMessage());
+        }
+
+        logger.info("Skipped a total of " + instancesSkipped + " relations containing instances");
+        return nodeMap;
     }
+
+    private static void storeHeads(Map<String, Node> nodeMap) {
+        Set<String> heads = new HashSet<>();
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("heads"), "UTF8"))) {
+            for (String key : nodeMap.keySet()) {
+                writer.write(key + "\n");
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
 }

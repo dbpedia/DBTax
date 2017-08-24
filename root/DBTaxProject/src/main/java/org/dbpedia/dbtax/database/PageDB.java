@@ -18,15 +18,20 @@ import org.slf4j.LoggerFactory;
 public class PageDB {
 
 	private static final Logger logger= LoggerFactory.getLogger(PageDB.class);
+    private Connection connection;
 
-	public static int getPageId(String catPageTitle){
+    public PageDB(Connection connection) {
+        if(this.connection==null)
+            this.connection = connection;
+    }
+
+    public int getPageId(String catPageTitle){
 		
 		int resultId = -1;
 
 		String query = "SELECT page_id FROM `page` WHERE `page_title` = ? AND page_namespace=14";
 
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps =	connection.prepareStatement( query )){
+		try(PreparedStatement ps =	connection.prepareStatement( query )){
 		
 			ps.setString(1, catPageTitle);
 			
@@ -46,12 +51,15 @@ public class PageDB {
 
 		String query = "select page_id, page_namespace, page_title from page where page_id =? ;";
 
-		ResultSet rs = null;
-		List<Integer> pageIds = CategoryLinksDB.getPageIdOfCategory(category);
-		List<Page> pages= new ArrayList<Page>();
+		ResultSet rs;
+		List<Page> pages= new ArrayList<>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)){
+
+			CategoryLinksDB categoryLinksDB = new CategoryLinksDB(connection);
+			List<Integer> pageIds = categoryLinksDB.getPageIdOfCategory(category);
+
 			for(Integer pageId: pageIds){
 				ps.setInt(1, pageId);
 				//Execute the query

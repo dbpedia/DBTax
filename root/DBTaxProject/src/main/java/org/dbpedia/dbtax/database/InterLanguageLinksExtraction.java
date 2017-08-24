@@ -22,6 +22,8 @@ public class InterLanguageLinksExtraction {
 		try(Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query)){
 
+			NodeDB nodeDB = new NodeDB(connection);
+
 			ResultSet rs = ps.executeQuery();
 
 			//We loop through the entire result set of nodes.
@@ -32,7 +34,7 @@ public class InterLanguageLinksExtraction {
                 nodes.add(node);
 			}
 
-			NodeDB.updateInterlanguageLinks(nodes);
+			nodeDB.updateInterlanguageLinks(nodes);
 		} catch (SQLException e) {
 	        logger.error(e.getMessage());
 		}
