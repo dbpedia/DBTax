@@ -38,10 +38,10 @@ public class PageTypeAssignment {
                 assignPagesForCategory(category, head, currentPath);
             }
         }
-
         //Output the generated model to a file.
         try {
-            model.write(new FileOutputStream("A-BoxHeads.ttl"), "N-TRIPLES");
+            model.write(new FileOutputStream("A-Box.ttl"), "N-TRIPLES");
+            logger.info("Output : A-Box.ttl");
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
         }
@@ -64,7 +64,7 @@ public class PageTypeAssignment {
                     Resource resource = model.createResource(resourceNamespace + result);
                     resource.addProperty(RDF.type, model.createResource(headNamespace + Utils.normalizeName(head)));
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
             
@@ -74,35 +74,23 @@ public class PageTypeAssignment {
                 if (!currentPath.contains(pageName))
                     assignPagesForCategory(pageName, head, currentPath);
                 else
-                    logger.info("cycle found!" + currentPath.toString());
+                    logger.debug("cycle found!" + currentPath.toString());
             }
         }
     }
     public static Set<String> generateHeads(String filename) {
         Set<String> heads = new HashSet();
-        BufferedReader in;
-        try {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-        } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException("File " + filename + " not fount!", e);
 
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("UnsupportedEncodingException: ", e);
-        }
+        String line;
 
-        String line = null;
-
-        try {
-            /* Fill the existing tree */
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"))) {
+            /* Get all the heads */
             while ((line = in.readLine()) != null) {
-
                 heads.add(line.toLowerCase().trim());
-
             }
-            in.close();
 
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            logger.error(e.getMessage());
         }
 
         return heads;

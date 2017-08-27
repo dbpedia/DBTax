@@ -36,7 +36,7 @@ public class NodeDB{
          */
 	public void insertNode( int nodeID, String categoryName){
 
-		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural) VALUES (?,?,0,0,0)";
+		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural, score_interlang) VALUES (?,?,0,0,0,0)";
 
 		try(PreparedStatement ps =connection.prepareStatement(query)){
 
@@ -51,7 +51,7 @@ public class NodeDB{
 
 	public void insertNode(Set<Node> nodeMap){
 
-		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural) VALUES (?,?,1,0,0);";
+		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural, score_interlang) VALUES (?,?,1,0,0,0);";
 		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			for (Node node : nodeMap) {
 				ps.setInt(1, node.getNodeId());

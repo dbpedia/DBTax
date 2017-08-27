@@ -15,3 +15,5 @@ src/main/Resources/DB/
 
 
 DBTaxProject.iml
+!/src/main/java/org/dbpedia/dbtax/utils/
+!/src/main/java/org/dbpedia/dbtax/database/PNodeDB.java

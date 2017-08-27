@@ -11,15 +11,15 @@ import java.sql.SQLException;
 /**
  * Created by shashank on 23/8/17.
  */
-public class ProminentNodeDB {
-    private Logger logger = LoggerFactory.getLogger(ProminentNodeDB.class);
+public class PNodeDB {
+    private Logger logger = LoggerFactory.getLogger(PNodeDB.class);
     private Connection connection;
-    public ProminentNodeDB(Connection connection){
+    public PNodeDB(Connection connection){
         this.connection = connection;
     }
 
     public boolean isProminent(String node){
-
+        boolean isProminent = false;
         String query =  "select * from pnode where head_of_name = ?;";
 
         try(PreparedStatement ps = connection.prepareStatement(query)){
@@ -27,12 +27,13 @@ public class ProminentNodeDB {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()){
-                return true;
+                isProminent = true;
+                break;
             }
 
         } catch(SQLException e){
             logger.error(e.getMessage());
         }
-        return false;
+        return isProminent;
     }
 }

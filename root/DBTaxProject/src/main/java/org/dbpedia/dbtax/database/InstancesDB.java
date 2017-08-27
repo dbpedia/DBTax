@@ -40,7 +40,7 @@ public class InstancesDB {
     public boolean isAnInstance(String parent,String child){
 
         String query =  "select * from instances where instance in (?,?);";
-
+        boolean isInstance = false;
         try(PreparedStatement ps = connection.prepareStatement(query)){
 
             ps.setString(1,parent);
@@ -48,14 +48,14 @@ public class InstancesDB {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()){
-                return true;
+                isInstance = true;
+                break;
             }
 
         } catch(SQLException e){
             logger.error(e.getMessage());
         }
-        logger.debug("Instance not found: "+ parent+" "+ child);
-        return false;
+        return isInstance;
     }
 
 }

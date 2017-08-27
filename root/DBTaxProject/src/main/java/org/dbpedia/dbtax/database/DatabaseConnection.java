@@ -24,7 +24,6 @@ public class DatabaseConnection {
             return con;
         }
 
-        Connection con = null;
         Properties props= new Properties();
 
         try(FileInputStream file =new FileInputStream("db.properties")){
@@ -44,9 +43,10 @@ public class DatabaseConnection {
         return con;
     }
 
+
+
+
 /*
-
-
 
     private DatabaseConnection(){ }
 
@@ -78,7 +78,6 @@ public class DatabaseConnection {
 
    public static void main(String [] argc){
         DatabaseConnection.getConnection();
-
-        System.out.print("done");
+        logger.info("done");
     }
 }

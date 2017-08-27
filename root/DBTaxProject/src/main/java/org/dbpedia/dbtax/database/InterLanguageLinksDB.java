@@ -30,7 +30,7 @@ public class InterLanguageLinksDB {
 
 	public static int getLanguageLinksCount(int pageId){
 		
-		ResultSet rs = null;
+		ResultSet rs;
 		int nodeId=0;
 		
 		String query =  "select count(*) from langlinks where ll_from=?";

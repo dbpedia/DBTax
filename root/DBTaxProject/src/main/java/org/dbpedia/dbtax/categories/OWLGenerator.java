@@ -70,6 +70,7 @@ public class OWLGenerator {
 
         try {
             model.write(new FileOutputStream("T-Box.ttl"), "TURTLE");
+            logger.info("Output: T-Box.ttl");
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
         }
