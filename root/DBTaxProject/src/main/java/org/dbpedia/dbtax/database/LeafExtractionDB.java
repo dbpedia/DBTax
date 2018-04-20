@@ -18,13 +18,13 @@ import org.slf4j.LoggerFactory;
 
 public class LeafExtractionDB {
 
-
     private static final Logger logger = LoggerFactory.getLogger(LeafExtractionDB.class);
 
 	private LeafExtractionDB(){ }
 	public static void extractLeaves(){
 
-		int threshold = 56; //ThresholdCalculations.findThreshold();
+		// To find threshold: Can use: ThresholdCalculations.findThreshold()
+		int threshold = 56;
 
 		String query = "SELECT cat_title "
 				+ "FROM category "
@@ -46,18 +46,22 @@ public class LeafExtractionDB {
 		Set<Node> nodeMap = new HashSet<>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)) {
-			
-			ResultSet rs = ps.executeQuery();
-			logger.info("Excuted the query to retrieve the leaves");
+			PreparedStatement ps = connection.prepareStatement(query)) {
+
+            CategoryLinksDB categoryLinksDB = new CategoryLinksDB(connection);
+            PageDB pageDB = new PageDB(connection);
+            NodeDB nodeDB = new NodeDB(connection);
+
+            ResultSet rs = ps.executeQuery();
+			logger.info("Executed the query to retrieve the leaves");
 
 			//We loop through the entire result set of leaves.
 			while ( rs.next() ){
 
-				String catName = rs.getString("cat_title").trim();
+				String catName = rs.getString("cat_title");
 
 				//Get the page id of category 
-				int pageid = PageDB.getPageId(catName);
+				int pageid = pageDB.getPageId(catName);
 
 				if(pageid!=-1){
 					//Add the leaf node to the database Node table
@@ -65,13 +69,14 @@ public class LeafExtractionDB {
 
                     //The below function is to find the immediate parents of the categories
 					//And add them to corresponding node and edge databases
-					CategoryLinksDB.getCategoryParentsByPageID(pageid);
+					categoryLinksDB.getCategoryParentsByPageID(pageid, nodeDB, pageDB);
 				}
 			}
+
+			nodeDB.insertNode(nodeMap);
+
 		} catch ( SQLException e ){
 			logger.error(e.getMessage());
 		}
-
-        NodeDB.insertNode(nodeMap);
 	}
 }

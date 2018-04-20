@@ -12,50 +12,56 @@ import org.dbpedia.dbtax.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /*
  * This class has most of the methods that deal with Page table in Database. 
  */
 
 public class NodeDB{
 
-    private static final Logger logger = LoggerFactory.getLogger(NodeDB.class);
+	private static final Logger logger = LoggerFactory.getLogger(NodeDB.class);
+	private Connection connection;
+
+	public NodeDB(Connection connection) {
+		if(this.connection==null)
+			this.connection = connection;
+	}
+	public NodeDB(){
+
+	}
+
 	/*
-	 * This function is responsible for adding Categories/Node to Node table.
-	 * Input Parameters: PageID(from page Table) and CategoryName.
-	 */
-	public static void insertNode( int nodeID, String categoryName){
+         * This function is responsible for adding Categories/Node to Node table.
+         * Input Parameters: PageID(from page Table) and CategoryName.
+         */
+	public void insertNode( int nodeID, String categoryName){
 
-		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent,score_edit_histo) VALUES (?,?,0,0,0)";
+		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural, score_interlang) VALUES (?,?,0,0,0,0)";
 
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps =connection.prepareStatement(query)){
-			
+		try(PreparedStatement ps =connection.prepareStatement(query)){
+
 			ps.setInt( 1, nodeID);
 			ps.setString( 2, categoryName);
 			ps.executeUpdate();
 
-			connection.close();
 		} catch(SQLException e){
 			logger.error(e.getMessage());
 		}
 	}
 
-	public static void insertNode(Set<Node> nodeMap){
+	public void insertNode(Set<Node> nodeMap){
 
-		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent,score_edit_histo) VALUES (?,?,1,0,0);";
-
-		try(Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement ps =connection.prepareStatement(query)){
-			for(Node node: nodeMap){
-				ps.setInt( 1, node.getNodeId());
-				ps.setString( 2, node.getCategoryName());
+		String query = "INSERT IGNORE INTO node(node_id,category_name,is_leaf,is_prominent, is_head_plural, score_interlang) VALUES (?,?,1,0,0,0);";
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			for (Node node : nodeMap) {
+				ps.setInt(1, node.getNodeId());
+				ps.setString(2, node.getCategoryName());
 				ps.addBatch();
 			}
 			connection.setAutoCommit(false);
 			ps.executeBatch();
 			connection.setAutoCommit(true);
-			connection.close();
-		} catch(SQLException e){
+		} catch (SQLException e) {
 			logger.error(e.getMessage());
 		}
 	}
@@ -64,13 +70,13 @@ public class NodeDB{
 	 * This method gets all the distinct leaf nodes from Edges Table
 	 * which are not parent Nodes
 	 */
-	public static ArrayList<Integer>  getDisinctleafNodes(){
+	public ArrayList<Integer>  getDisinctleafNodes(){
 
 		String query =  "SELECT  distinct `child_id` FROM edges WHERE `child_id` NOT IN (SELECT `parent_id` FROM edges );";
 
-        ArrayList<Integer> leafId= new  ArrayList<>();
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)){
+		ArrayList<Integer> leafId= new  ArrayList<>();
+		try(PreparedStatement ps = connection.prepareStatement(query)){
+
 			//Execute the query
 			ResultSet rs = ps.executeQuery();
 
@@ -78,14 +84,91 @@ public class NodeDB{
 			while (rs.next()){
 				leafId.add(rs.getInt("child_id") );
 			}
+		} catch(SQLException e){
+			logger.error(e.getMessage());
+		}
+		return leafId;
+	}
 
+	public ArrayList<String>  getDisinctLeafHeads(){
+
+		String query =  "SELECT  distinct `head_of_name` FROM node WHERE `is_leaf`=1;";
+
+		ArrayList<String> leafHeads= new  ArrayList<>();
+		try(PreparedStatement ps = connection.prepareStatement(query)){
+
+			//Execute the query
+			ResultSet rs = ps.executeQuery();
+
+			//All the nodes which are not parents and distinct are stored in LeafID array.
+			while (rs.next()){
+				leafHeads.add(rs.getString("head_of_name") );
+			}
+		} catch(SQLException e){
+			logger.error(e.getMessage());
+		}
+		return leafHeads;
+	}
+
+	public ArrayList<Integer>  getParentNodes(int childId){
+
+		String query =  "SELECT `parent_id` FROM edges WHERE `child_id` = ?;";
+
+		ArrayList<Integer> parentId= new  ArrayList<>();
+		try(PreparedStatement ps = connection.prepareStatement(query)){
+			ps.setInt(1,childId);
+			//Execute the query
+			ResultSet rs = ps.executeQuery();
+
+			//All the nodes which are not parents and distinct are stored in LeafID array.
+			while (rs.next()){
+				parentId.add(rs.getInt("parent_id") );
+			}
+		} catch(SQLException e){
+			logger.error(e.getMessage());
+		}
+		return parentId;
+	}
+
+
+	public int getSingleParentNode(int childId){
+
+		String query =  "SELECT `parent_id` FROM edges WHERE `child_id` = ?;";
+
+		int parentId=-1;
+		try(PreparedStatement ps = connection.prepareStatement(query)){
+			ps.setInt(1,childId);
+			//Execute the query
+			ResultSet rs = ps.executeQuery();
+			//All the nodes which are not parents and distinct are stored in LeafID array.
+			while (rs.next()){
+				parentId= rs.getInt("parent_id");
+			}
 		} catch(SQLException e){
 			logger.error(e.getMessage());
 		}
 
-        return leafId;
+		return parentId;
 	}
 
+	public String  getHeadOfNode(int nodeId){
+		String query =  "SELECT head_of_name FROM node WHERE `node_id` = ?;";
+
+		String headName = null;
+		try(PreparedStatement ps = connection.prepareStatement(query)){
+			ps.setInt(1,nodeId);
+			//Execute the query
+			ResultSet rs = ps.executeQuery();
+
+			//All the nodes which are not parents and distinct are stored in LeafID array.
+			while (rs.next()){
+				headName = rs.getString("head_of_name");
+			}
+		} catch(SQLException e){
+			logger.error(e.getMessage());
+		}
+		return headName;
+	}
 	/*
 	 * This method gets all the distinct leaf nodes from Edges Table
 	 * which are not parent Nodes
@@ -117,65 +200,61 @@ public class NodeDB{
 		return leafNames;
 	}
 
-	public static void updateProminentNode(HashSet<Integer> prominentNodes){
-
+	public void updateProminentNode(HashSet<Integer> prominentNodes){
 
 		String query = "UPDATE node SET is_prominent=true WHERE node_id= ?";
 
-		try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query)){
-		
+		try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
+
 			for (Integer i : prominentNodes) {
-			    preparedStatement.setInt(1,i);
-			    preparedStatement.addBatch();
+				preparedStatement.setInt(1,i);
+				preparedStatement.addBatch();
 			}
 
-            connection.setAutoCommit(false);
-            preparedStatement.executeBatch();
-            connection.setAutoCommit(true);
+			connection.setAutoCommit(false);
+			preparedStatement.executeBatch();
+			connection.setAutoCommit(true);
 
-        } catch(SQLException e){
+		} catch(SQLException e){
 			logger.error(e.getMessage());
-		}	
+		}
 	}
 
-	public static void updatePluralNode(int id, String head, boolean isPlural){
+	public void updatePluralNode(int id, String head, boolean isPlural){
 		String query;
 		if(isPlural)
 			query = "UPDATE node SET is_head_plural=true, head_of_name=? WHERE node_id= ? ;";
-		else 
+		else
 			query = "UPDATE node SET head_of_name= ? WHERE node_id= ?;";
 
-		try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query)){
+		try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
 			preparedStatement.setString(1,head);
 			preparedStatement.setInt(2, id);
 			preparedStatement.execute();
 		} catch(SQLException e){
-            logger.error(e.getMessage());
-		} 
+			logger.error(e.getMessage());
+		}
 	}
 
-    public static void updateInterlanguageLinks(ArrayList<Node> nodes){
+	public void updateInterlanguageLinks(ArrayList<Node> nodes){
 
-        String query = "UPDATE node SET score_interlang= ? WHERE node_id= ?;";
+		String query = "UPDATE node SET score_interlang= ? WHERE node_id= ?;";
 
-        try(Connection connection = DatabaseConnection.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(query)){
+		try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
 
-            for(Node node:nodes){
-                preparedStatement.setInt(1,node.getInterLangScore());
-                preparedStatement.setInt(2,node.getNodeId());
-                preparedStatement.addBatch();
-            }
-            connection.setAutoCommit(false);
-            preparedStatement.executeBatch();
-            connection.setAutoCommit(true);
+			for(Node node:nodes){
+				preparedStatement.setInt(1,node.getInterLangScore());
+				preparedStatement.setInt(2,node.getNodeId());
+				preparedStatement.addBatch();
+			}
+			connection.setAutoCommit(false);
+			preparedStatement.executeBatch();
+			connection.setAutoCommit(true);
 
-        } catch(SQLException e){
-            logger.error(e.getMessage());
-        }
-    }
+		} catch(SQLException e){
+			logger.error(e.getMessage());
+		}
+	}
 
 	public static Set<String>  getDisinctheads(){
 
@@ -184,7 +263,7 @@ public class NodeDB{
 		Set<String> heads= new HashSet<>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)){
+			PreparedStatement ps = connection.prepareStatement(query)){
 			//Execute the query
 			ResultSet rs = ps.executeQuery();
 
@@ -193,7 +272,7 @@ public class NodeDB{
 			}
 
 		} catch(SQLException e){
-            logger.error(e.getMessage());
+			logger.error(e.getMessage());
 		}
 		return heads;
 
@@ -201,21 +280,21 @@ public class NodeDB{
 
 	public static Set<String>  getCategoriesByHead(String head){
 
-		String query =  "SELECT  category_name FROM node where `head_of_name` = ? ;";
+		String query =  "SELECT  category_name FROM node where `head_of_name` = ? and is_prominent=1;";
 
-		Set<String> categories= new HashSet<String>();
+		Set<String> categories= new HashSet<>();
 
 		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)){
-				ps.setString(1,head);
-				ResultSet rs = ps.executeQuery();
+			PreparedStatement ps = connection.prepareStatement(query)){
+			ps.setString(1,head);
+			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()){
 				categories.add(rs.getString("category_name") );
 			}
 
 		} catch(SQLException e){
-            logger.error(e.getMessage());
+			logger.error(e.getMessage());
 		}
 		return categories;
 	}

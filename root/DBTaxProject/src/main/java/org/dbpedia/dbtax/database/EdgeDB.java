@@ -13,10 +13,20 @@ import java.util.ArrayList;
 public class EdgeDB {
 
 	private static final Logger logger = LoggerFactory.getLogger(EdgeDB.class);
+	private Connection connection;
 	/*
 	 * This function is to insert an Edge which captures the 
 	 * Parent-Child Relationship among categories
 	 */
+
+	public EdgeDB(Connection connection) {
+		if(this.connection==null)
+		    this.connection= connection;
+	}
+
+	public EdgeDB() {
+	}
+
 	public static void insertEdge(int parentId, int chidId){
 
 		String query = "INSERT IGNORE INTO edges(parent_id,child_id) VALUES (?, ?)";
@@ -35,13 +45,12 @@ public class EdgeDB {
 	/*
 	 * This method is used to get all parents of the given leaf Node
 	 */
-	public static ArrayList<Integer> getTransitiveParents(int leafNode){
+	public ArrayList<Integer> getTransitiveParents(int leafNode){
 		
 		String query =  "SELECT parent_id FROM edges WHERE child_id =?";
 		ArrayList<Integer> parents= new ArrayList<>();
 
-		try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)) {
+		try(PreparedStatement ps = connection.prepareStatement(query)) {
 			
 			ps.setInt( 1, leafNode);
 			ResultSet rs = ps.executeQuery();
@@ -59,14 +68,13 @@ public class EdgeDB {
 	 * This method returns all the children nodes of the given node
 	 * from Edge table
 	 */
-	public static ArrayList<Integer> getChildren(int parentId){
+	public ArrayList<Integer> getChildren(int parentId){
 		
 		String query =  "SELECT child_id FROM edges WHERE parent_id=?";
 
         ArrayList<Integer> childrenList= new ArrayList<>();
 
-        try(Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement ps = connection.prepareStatement(query)) {
+        try(PreparedStatement ps = connection.prepareStatement(query)) {
 			
 			ps.setInt( 1, parentId);
 			ResultSet rs = ps.executeQuery();

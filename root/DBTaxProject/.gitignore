@@ -12,7 +12,8 @@ out/
 src/main/java/org/dbpedia/dbtax/utils/
 .idea/
 src/main/Resources/DB/
-scripts.sql
-setup.sql
+
 
 DBTaxProject.iml
+!/src/main/java/org/dbpedia/dbtax/utils/
+!/src/main/java/org/dbpedia/dbtax/database/PNodeDB.java
